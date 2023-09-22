@@ -1,0 +1,86 @@
+import string;
+import ds/tree;
+
+// Iteration method
+fib(n : int) -> [int]
+{
+	if (n < 1) { // Mistake syntax
+		[0];
+	} else if (n == 1) {
+		[1];
+	} else if (n == 2) {
+		[1, 1];
+	} else {
+		result = ref [1, 1];
+		fori(2, n - 1, \i -> { 
+				newValue : int = ^result[i - 1] + ^result[i - 2];
+				refArrayPush(result, newValue);
+			});
+		^result;
+	}
+}
+
+// Recurent method
+recFib(n : int) -> [int] 
+{
+	if (n < 1) { // Mistake syntax
+		[0];
+	} else if (n == 1) {
+		[1];
+	} else if (n == 2) {
+		[1, 1];
+	} else {
+		old : [int] = recFib(n - 1);
+		len : int = length(old);
+		newValue : int = old[len - 1] + old[len - 2];
+		concat(recFib(n - 1), [newValue]);
+	}
+}
+
+// TailRecurent method
+tailRecFib(n : int, res : int, oldRes : int) -> int
+{
+	if (n < 2) {
+		res;
+	} else {
+		tailRecFib(n - 1, res + oldRes, res);		
+	}
+}
+
+// Search for steam indexes (i, j), such as (a_i + a_j = m)
+inds(a : [int], m : int) -> [Pair<int, int>]
+{
+	tree : Tree = foldi(a, makeTree(), \i,t,value -> 
+						setTree(t, value, [i]));
+	foldi(a, [], \i,pairs,a_i ->
+        switch (lookupTree(tree, m - a_i)) {
+            Some(ind): concat(pairs, map(ind, \x -> Pair(x, i)));
+            None(): pairs;
+        });
+}
+
+// Transference of the array of numbers into line
+arr2s(arr : [int]) -> string 
+{
+	strGlue(map(arr, i2s), ", ");
+}
+
+// The calculation of the amount of the array
+arr2sum(arr : [int]) -> int
+{
+	fold(arr, 0, \x,y -> x+y);
+}
+
+main()
+{
+	index : int = 5;
+	println("iterFib: " + arr2s(fib(index)));
+	println("recFib: " + arr2s(recFib(index)));
+	fibArr = generate(0, index, \i -> tailRecFib(i, 1, 1));
+	println("tailRecFib: " + arr2s(fibArr));
+
+	println("summ: " + i2s(arr2sum(fib(index))));
+
+	founded = inds([1,2,3,4], 5);
+	println(founded);
+}
