@@ -29,7 +29,7 @@ export {
     ratNum2s(rat : ratNum)                             -> string;
     parse(str : string)                                -> Expr;
     expr2s(v : Expr)                                   -> string;
-    calculate(v : Expr, params : Tree<string, ratNum>) -> ratNum;
+    calculateRat(v : Expr, params : Tree<string, ratNum>) -> ratNum;
 }
 
 sumRatNum(l : ratNum, r : ratNum) -> ratNum {
@@ -79,20 +79,20 @@ expr2s(v : Expr) -> string {
 		Sum(a, b) : "(" + expr2s(a) + "+" + expr2s(b) + ")";
         Div(a, b) : "(" + expr2s(a) + "/" + expr2s(b) + ")";
         Sub(a, b) : "(" + expr2s(a) + "-" + expr2s(b) + ")";
-        Neg(a) : "-" + expr2s(a);
-        Int(a) : i2s(a);
-        Var(a) : a;
+        Neg(a)    : "-" + expr2s(a);
+        Int(a)    : i2s(a);
+        Var(a)    : a;
 	}
 }
 
-calculate(v : Expr, params : Tree<string, ratNum>) -> ratNum {
+calculateRat(v : Expr, params : Tree<string, ratNum>) -> ratNum {
     switch (v) {
         Sum(a, b) : sumRatNum(calculate(a, params), calculate(b, params));
         Mul(a, b) : mulRatNum(calculate(a, params), calculate(b, params));
-        Div(a,b) : divRatNum(calculate(a, params), calculate(b, params));
+        Div(a, b) : divRatNum(calculate(a, params), calculate(b, params));
         Sub(a, b) : minusRatNum(calculate(a, params), calculate(b, params));
-        Neg(a) : mulRatNum(ratNum(-1, 1), calculate(a, params)); 
-        Int(a) : ratNum(a, 1);
-        Var(a) : either(lookupTree(params, a), ratNum(0, 1));
+        Neg(a)    : mulRatNum(ratNum(-1, 1), calculate(a, params)); 
+        Int(a)    : ratNum(a, 1);
+        Var(a)    : either(lookupTree(params, a), ratNum(0, 1));
     }
 }

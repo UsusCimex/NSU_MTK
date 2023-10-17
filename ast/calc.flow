@@ -33,7 +33,7 @@ calculate(ex : Expr) -> int {
     switch (ex) {
         Sum(a, b) : calculate(a) + calculate(b);
         Mul(a, b) : calculate(a) * calculate(b);
-        Int(a) : a;
+        Int(a)    : a;
     }
 }
 
@@ -41,6 +41,6 @@ expr2s (ex: Expr) -> string {
 	switch (ex) {
 		Mul(a, b) : "(" + expr2s(a) + "*" + expr2s(b) + ")";
 		Sum(a, b) : "(" + expr2s(a) + "+" + expr2s(b) + ")";
-        Int(a) : i2s(a);
+        Int(a)    : i2s(a);
 	}
 }
