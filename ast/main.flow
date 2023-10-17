@@ -1,0 +1,36 @@
+// import calc;
+// import calcRpn;
+import calcRat;
+
+
+main() {
+    //Default calculator test
+    // test = "( ((1 +      2) * 3)  + 4)";
+    // test2 = "((2 + 3) * (2 * 3))";
+    // exp = parse(test);
+    // println("TREE: " + expr2s(exp));
+    // solve = calculate(exp);
+    // println(solve);
+
+    //RPN calculator test
+    // test = "(((2 + 3) * (2 * 3)) + 5)";
+    // println("ORIG: " + test);
+
+    // exp = parse(test);
+    // rpnFormat = expr2rpn(exp);
+    // println("RPN: " + rpn2s(rpnFormat));
+    // println("result: " + i2s(calculateRPN(rpnFormat)));
+
+    // exp2 = rpn2expr(rpnFormat);
+    // println("EXPR: " + expr2s(exp2));
+
+    //Rational calculator test
+    testRational = "- ((((5 * 3) / (4 * 2)) / 3) * a)";
+    params = setTreeValues(makeTree(), [Pair("a", ratNum(2, 1))]);
+    expRat = parse(testRational);
+    println("TREE2: " + expr2s(expRat));
+    solveRat = calculate(expRat, params);
+    println(ratNum2s(solveRat));
+
+    quit(0);
+}

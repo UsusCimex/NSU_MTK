@@ -1,0 +1,110 @@
+import string;
+import lingo/pegcode/driver;
+import ds/tree;
+import math/math;
+
+/*
+Расширьте язык арифметических выражений вычитанием, делением, сменой знака и переменными. 
+Для полученного нового языка алгебраических выражений напишите функцию, 
+которая вычисляет значение выражения при заданных значениях входящих в него переменных, 
+которые могут быть рациональными.
+*/
+
+export {
+    Expr ::= Sum, Mul, Sub, Div, Int, Var, Neg;
+        Sum : (lhs : Expr, rhs : Expr);
+        Mul : (lhs : Expr, rhs : Expr);
+        Sub : (lhs : Expr, rhs : Expr);
+        Div : (lhs : Expr, rhs : Expr);
+        Var : (val : string);
+        Int : (val : int);
+        Neg : (val : Expr);
+
+    ratNum : (numerator : int, denominator : int);
+
+    sumRatNum(l : ratNum, r : ratNum)                  -> ratNum;
+    minusRatNum(l : ratNum, r : ratNum)                -> ratNum;
+    mulRatNum(l : ratNum, r : ratNum)                  -> ratNum;
+    divRatNum(l : ratNum, r : ratNum)                  -> ratNum;
+    ratNum2s(rat : ratNum)                             -> string;
+    parse(str : string)                                -> Expr;
+    expr2s(v : Expr)                                   -> string;
+    calculate(v : Expr, params : Tree<string, ratNum>) -> ratNum;
+}
+
+sumRatNum(l : ratNum, r : ratNum) -> ratNum {
+    newNumerator = l.numerator * r.denominator + r.numerator * l.denominator;
+    newDenominator = l.denominator * r.denominator;
+    nod = iabs(gcd(newNumerator, newDenominator));
+    ratNum(newNumerator / nod, newDenominator / nod);
+}
+
+minusRatNum(l : ratNum, r : ratNum) -> ratNum {
+    newNumerator = l.numerator * r.denominator - r.numerator * l.denominator;
+    newDenominator = l.denominator * r.denominator;
+    nod = iabs(gcd(newNumerator, newDenominator));
+    ratNum(newNumerator / nod, newDenominator / nod);
+}
+
+mulRatNum(l : ratNum, r : ratNum) -> ratNum {
+    newNumerator = l.numerator * r.numerator ;
+    newDenominator = l.denominator * r.denominator;
+    nod = iabs(gcd(newNumerator, newDenominator));
+    ratNum(newNumerator / nod, newDenominator / nod);
+}
+
+divRatNum(l : ratNum, r : ratNum) -> ratNum {
+    newNumerator = l.numerator * r.denominator;
+    newDenominator = l.denominator * r.numerator;
+    nod = iabs(gcd(newNumerator, newDenominator));
+    ratNum(newNumerator / nod, newDenominator / nod);
+}
+
+ratNum2s(rat : ratNum) -> string {
+    i2s(rat.numerator) + "/" + i2s(rat.denominator);
+}
+
+parse(str : string) -> Expr {
+    e_gr = "#include grammar/grammarRat.lingo";
+    parsic(
+        compilePegGrammar(e_gr),
+        str,
+        defaultPegActions
+    );
+}
+
+expr2s(v : Expr) -> string {
+    switch (v) {
+		Mul(a, b) : "(" + expr2s(a) + "*" + expr2s(b) + ")";
+		Sum(a, b) : "(" + expr2s(a) + "+" + expr2s(b) + ")";
+        Div(a, b) : "(" + expr2s(a) + "/" + expr2s(b) + ")";
+        Sub(a, b) : "(" + expr2s(a) + "-" + expr2s(b) + ")";
+        Neg(a) : "-" + expr2s(a);
+        Int(a) : i2s(a);
+        Var(a) : a;
+	}
+}
+
+calculate(v : Expr, params : Tree<string, ratNum>) -> ratNum {
+    switch (v) {
+        Sum(a, b) : sumRatNum(calculate(a, params), calculate(b, params));
+        Mul(a, b) : mulRatNum(calculate(a, params), calculate(b, params));
+        Div(a,b) : divRatNum(calculate(a, params), calculate(b, params));
+        Sub(a, b) : minusRatNum(calculate(a, params), calculate(b, params));
+        Neg(a) : mulRatNum(ratNum(-1, 1), calculate(a, params)); 
+        Int(a) : ratNum(a, 1);
+        Var(a) : either(lookupTree(params, a), ratNum(0, 1));
+    }
+}
+
+/*
+Реализуйте функцию преобразования алгебраического выражения в рациональную функцию (отношение двух многочленов).
+*/
+
+///
+
+/*
+Реализуйте функцию упрощения рациональной функции по заданному набору тождеств.
+*/
+
+///

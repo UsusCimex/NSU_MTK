@@ -1,0 +1,15 @@
+/*
+Реализуйте функцию дифференцирования алгебраического выражения по заданной переменной. 
+Напишите функцию упрощения, которая удаляет выражения вида 1 + 0 и x * 0.
+*/
+
+export {
+    Expr ::= Int, Var, Sum, Mul, Sub, Div, Neg;
+        Int : (val : int);
+        Var : (val : string);
+        Sum : (lVal : Expr, rVal : Expr);
+        Mul : (lVal : Expr, rVal : Expr);
+        Sub : (lVal : Expr, rVal : Expr);
+        Div : (lVal : Expr, rVal : Expr);
+        Neg : (val : int);
+}

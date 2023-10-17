@@ -1,0 +1,88 @@
+import string;
+import lingo/pegcode/driver;
+import calc;
+
+/*
+Реализуйте калькулятор для обратной польской записи (RPN) арифметических выражений. 
+Напишите функции перевода арифметический выражений в RPN и наоборот.
+*/
+
+export {
+    myRPN ::= sumRPN, mulRPN, valRPN;
+        sumRPN : ();
+        mulRPN : (); 
+        valRPN : (val : int);
+    
+    expr2rpn(ex : Expr) -> [myRPN];
+    rpn2expr(rpn : [myRPN]) -> Expr;
+    rpn2s(rpn : [myRPN]) -> string;
+    calculateRPN(rpn : [myRPN]) -> int;
+}
+
+expr2rpn(ex: Expr) -> [myRPN] {
+    switch (ex) {
+		Mul(a, b) : concat(concat(expr2rpn(a), expr2rpn(b)), [mulRPN()]);
+		Sum(a, b) : concat(concat(expr2rpn(a), expr2rpn(b)), [sumRPN()]);
+        Int(a) : [valRPN(a)];
+	}
+}
+
+rpn2expr(rpn : [myRPN]) -> Expr {
+    lst = fold(rpn, makeList(), \acc, f -> {
+        switch(f) {
+            sumRPN() : {
+                l = headList(acc, Int(0));
+                acc2 = tailList(acc);
+                r = headList(acc2, Int(0));
+                acc3 = tailList(acc2);
+                Cons(Sum(r, l), acc3);
+            }
+            mulRPN() : {
+                l = headList(acc, Int(0));
+                acc2 = tailList(acc);
+                r = headList(acc2, Int(0));
+                acc3 = tailList(acc2);
+                Cons(Mul(r, l), acc3);
+            }
+            valRPN(a) : {
+                Cons(Int(a), acc);
+            }
+        }
+    });
+    headList(lst, Int(0));
+}
+
+rpn2s(ex : [myRPN]) -> string {
+    fold(ex, "", \acc, r -> {
+        switch(r) {
+            sumRPN() : acc + "+ ";
+            mulRPN() : acc + "* ";
+            valRPN(a) : acc + i2s(a) + " ";
+        }
+    });
+}
+
+calculateRPN(rpn : [myRPN]) -> int {
+    lst = fold(rpn, makeList(), \acc, f -> {
+        switch(f) {
+            mulRPN() : {
+                l = headList(acc, 0);
+                acc2 = tailList(acc);
+                r = headList(acc2, 0);
+                acc3 = tailList(acc2);
+                Cons(l * r, acc3);
+            }
+            sumRPN() : {
+                l = headList(acc, 0);
+                acc2 = tailList(acc);
+                r = headList(acc2, 0);
+                acc3 = tailList(acc2);
+                Cons(l + r, acc3);
+            }
+            valRPN(a) : {
+                Cons(a, acc);
+            }
+        }
+    });
+    headList(lst, 0);
+}

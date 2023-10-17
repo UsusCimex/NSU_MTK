@@ -1,0 +1,46 @@
+import string;
+import lingo/pegcode/driver;
+
+/* 
+Реализуйте PEG-парсер для грамматики простых арифметических выражений (целые константы, операции + и *), 
+который порождает дерево синтаксического разбора. Используйте библиотеку lingo. 
+Преобразуйте дерево обратно в строку. Реализуйте калькулятор, вычисляющий значение арифметического выражения.
+*/
+
+export {
+    Expr ::= Sum, Mul, Int;
+        Sum : (lhs : Expr, rhs : Expr);
+        Mul : (lhs : Expr, rhs : Expr);
+        Int : (val : int);
+    
+    parse(str : string)  -> Expr;
+    calculate(ex : Expr) -> int;
+    expr2s(ex : Expr)    -> string;
+}
+
+
+
+parse(str : string) -> Expr {
+    e_gr = "#include grammar/grammar.lingo";
+    parsic(
+        compilePegGrammar(e_gr),
+        str,
+        defaultPegActions
+    );
+}
+
+calculate(ex : Expr) -> int {
+    switch (ex) {
+        Sum(a, b) : calculate(a) + calculate(b);
+        Mul(a, b) : calculate(a) * calculate(b);
+        Int(a) : a;
+    }
+}
+
+expr2s (ex: Expr) -> string {
+	switch (ex) {
+		Mul(a, b) : "(" + expr2s(a) + "*" + expr2s(b) + ")";
+		Sum(a, b) : "(" + expr2s(a) + "+" + expr2s(b) + ")";
+        Int(a) : i2s(a);
+	}
+}

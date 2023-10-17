@@ -1,0 +1,11 @@
+S = summ | multiply | substracion | division | int | var | negative;
+summ = "(" ws S:l ws "+" ws S:r ws ")" { Sum(:l, :r) };
+multiply = "(" ws S:l ws "*" ws S:r ws ")" { Mul(:l, :r) };
+substracion = "(" ws S:l ws "-" ws S:r ws ")" { Minus(:l, :r) };
+division = "(" ws S:l ws "/" ws S:r ws ")" { Div(:l, :r) };
+negative = ws "-" ws S:v ws { Neg(:v) };
+int = digit+ $s { Int( s2i($s) ) };
+var = letter+ $s { Var( $s ) };
+digit = '0' - '9';
+letter = 'a' - 'z';
+ws = (' ' | '\t' | '\n' | '\r')*;
