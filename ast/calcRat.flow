@@ -87,11 +87,11 @@ expr2s(v : Expr) -> string {
 
 calculateRat(v : Expr, params : Tree<string, ratNum>) -> ratNum {
     switch (v) {
-        Sum(a, b) : sumRatNum(calculate(a, params), calculate(b, params));
-        Mul(a, b) : mulRatNum(calculate(a, params), calculate(b, params));
-        Div(a, b) : divRatNum(calculate(a, params), calculate(b, params));
-        Sub(a, b) : minusRatNum(calculate(a, params), calculate(b, params));
-        Neg(a)    : mulRatNum(ratNum(-1, 1), calculate(a, params)); 
+        Sum(a, b) : sumRatNum(calculateRat(a, params), calculateRat(b, params));
+        Mul(a, b) : mulRatNum(calculateRat(a, params), calculateRat(b, params));
+        Div(a, b) : divRatNum(calculateRat(a, params), calculateRat(b, params));
+        Sub(a, b) : minusRatNum(calculateRat(a, params), calculateRat(b, params));
+        Neg(a)    : mulRatNum(ratNum(-1, 1), calculateRat(a, params)); 
         Int(a)    : ratNum(a, 1);
         Var(a)    : either(lookupTree(params, a), ratNum(0, 1));
     }
