@@ -1,15 +1,86 @@
+import calcRat;
+
 /*
 Реализуйте функцию дифференцирования алгебраического выражения по заданной переменной. 
 Напишите функцию упрощения, которая удаляет выражения вида 1 + 0 и x * 0.
 */
 
 export {
-    Expr ::= Int, Var, Sum, Mul, Sub, Div, Neg;
-        Int : (val : int);
-        Var : (val : string);
-        Sum : (lVal : Expr, rVal : Expr);
-        Mul : (lVal : Expr, rVal : Expr);
-        Sub : (lVal : Expr, rVal : Expr);
-        Div : (lVal : Expr, rVal : Expr);
-        Neg : (val : int);
+    differentiation(ex : Expr, var : Var) -> Expr;
+}
+
+differentiation(ex : Expr, var : Var) -> Expr {
+    switch (ex) {
+        Mul(a, b) : 
+        {
+            simplification( Sum(Mul(differentiation(a, var), b), Mul(a, differentiation(b, var))) );
+        }
+        Sum(a, b) : 
+        {
+            simplification( Sum(differentiation(a, var), differentiation(b, var)) );
+        }
+        Sub(a, b) : 
+        {
+            simplification( Sub(differentiation(a, var), differentiation(b, var)) );
+        }
+        Div(a, b) : 
+        {
+            simplification( Div(Sub(Mul(differentiation(a, var), b), Mul(a, differentiation(b, var))), Mul(b, b)) );
+        }
+        Var(a) : 
+        {
+            if (a == var.val) Int(1)
+            else Int(0);
+        }
+        Int(a) : 
+        {
+            Int(0);
+        }
+        Neg(a) : 
+        {
+            simplification( Neg(differentiation(a, var)) );
+        }
+    }
+}
+
+simplification(ex : Expr) -> Expr {
+    switch (ex) {
+		Mul(a, b) : 
+        {
+            if (a == Int(0) || b == Int(0)) Int(0)
+            else if (a == Int(1)) simplification(b)
+            else if (b == Int(1)) simplification(a)
+            else Mul(simplification(a), simplification(b));
+        }
+		Sum(a, b) :
+        {
+            if (a == Int(0)) simplification(b)
+            else if (b == Int(0)) simplification(a) 
+            else Sum(simplification(a), simplification(b));
+        }
+        Div(a, b) : 
+        {
+            if (a == Int(0)) Int(0)
+            else Div(simplification(a), simplification(b));
+        }
+        Sub(a, b) :
+        {
+            if (a == Int(0)) Neg(simplification(b))
+            else if (b == Int(0)) simplification(a)
+            else Sub(simplification(a), simplification(b));
+        }
+        Neg(a) :
+        {
+            if (a == Int(0)) simplification(a)
+            else Neg(simplification(a));
+        }
+        Int(a) :
+        {
+            Int(a);
+        }
+        Var(a) :
+        {
+            Var(a);
+        }
+	}
 }
