@@ -9,8 +9,8 @@ import lingo/pegcode/driver;
 
 export {
     Expr ::= Sum, Mul, Int;
-        Sum : (lhs : Expr, rhs : Expr);
-        Mul : (lhs : Expr, rhs : Expr);
+        Sum : (lVal : Expr, rVal : Expr);
+        Mul : (lVal : Expr, rVal : Expr);
         Int : (val : int);
     
     parse(str : string)  -> Expr;

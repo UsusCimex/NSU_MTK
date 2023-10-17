@@ -12,10 +12,10 @@ import math/math;
 
 export {
     Expr ::= Sum, Mul, Sub, Div, Int, Var, Neg;
-        Sum : (lhs : Expr, rhs : Expr);
-        Mul : (lhs : Expr, rhs : Expr);
-        Sub : (lhs : Expr, rhs : Expr);
-        Div : (lhs : Expr, rhs : Expr);
+        Sum : (lVal : Expr, rVal : Expr);
+        Mul : (lVal : Expr, rVal : Expr);
+        Sub : (lVal : Expr, rVal : Expr);
+        Div : (lVal : Expr, rVal : Expr);
         Var : (val : string);
         Int : (val : int);
         Neg : (val : Expr);
@@ -96,15 +96,3 @@ calculate(v : Expr, params : Tree<string, ratNum>) -> ratNum {
         Var(a) : either(lookupTree(params, a), ratNum(0, 1));
     }
 }
-
-/*
-Реализуйте функцию преобразования алгебраического выражения в рациональную функцию (отношение двух многочленов).
-*/
-
-///
-
-/*
-Реализуйте функцию упрощения рациональной функции по заданному набору тождеств.
-*/
-
-///
