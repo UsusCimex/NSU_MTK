@@ -1,7 +1,7 @@
 // import calc;
 // import calcRpn;
-// import calcRat;
-import calcDiff;
+import calcRat;
+// import calcDiff;
 
 
 main() {
@@ -26,12 +26,13 @@ main() {
     // println("EXPR: " + expr2s(exp2));
 
     //Rational calculator test
-    // testRational = "- ((((5 * 3) / (4 * 2)) / 3) * a)";
-    // params = setTreeValues(makeTree(), [Pair("a", ratNum(2, 1))]);
-    // expRat = parse(testRational);
-    // println("TREE2: " + expr2s(expRat));
-    // solveRat = calculateRat(expRat, params);
-    // println(ratNum2s(solveRat));
+    testRational = "- ((((5 * 3) / (4 * 2)) / 3) * a)";
+    // testRational = "(4 / 2)";
+    params = setTreeValues(makeTree(), [Pair("a", ratNum(2, 1))]);
+    expRat = parse(testRational);
+    println("TREE2: " + expr2s(expRat));
+    solveRat = calculateRat(expRat, params);
+    println(ratNum2s(solveRat));
 
     //Differentiation test
     // testDifferential = "((5 * x) + 5)";

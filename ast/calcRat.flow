@@ -22,13 +22,13 @@ export {
 
     ratNum : (numerator : int, denominator : int);
 
-    sumRatNum(l : ratNum, r : ratNum)                  -> ratNum;
-    minusRatNum(l : ratNum, r : ratNum)                -> ratNum;
-    mulRatNum(l : ratNum, r : ratNum)                  -> ratNum;
-    divRatNum(l : ratNum, r : ratNum)                  -> ratNum;
-    ratNum2s(rat : ratNum)                             -> string;
-    parse(str : string)                                -> Expr;
-    expr2s(v : Expr)                                   -> string;
+    sumRatNum(l : ratNum, r : ratNum)                     -> ratNum;
+    minusRatNum(l : ratNum, r : ratNum)                   -> ratNum;
+    mulRatNum(l : ratNum, r : ratNum)                     -> ratNum;
+    divRatNum(l : ratNum, r : ratNum)                     -> ratNum;
+    ratNum2s(rat : ratNum)                                -> string;
+    parse(str : string)                                   -> Expr;
+    expr2s(v : Expr)                                      -> string;
     calculateRat(v : Expr, params : Tree<string, ratNum>) -> ratNum;
 }
 
@@ -61,7 +61,9 @@ divRatNum(l : ratNum, r : ratNum) -> ratNum {
 }
 
 ratNum2s(rat : ratNum) -> string {
-    i2s(rat.numerator) + "/" + i2s(rat.denominator);
+    if (rat.denominator == 0) "Division by zero..."
+    else if (rat.denominator == 1) i2s(rat.numerator)
+    else i2s(rat.numerator) + "/" + i2s(rat.denominator);
 }
 
 parse(str : string) -> Expr {
