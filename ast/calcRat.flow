@@ -33,29 +33,39 @@ export {
 }
 
 sumRatNum(l : ratNum, r : ratNum) -> ratNum {
-    newNumerator = l.numerator * r.denominator + r.numerator * l.denominator;
-    newDenominator = l.denominator * r.denominator;
+    nok = lcm(l.denominator, r.denominator);
+    newNumerator = nok / l.denominator * l.numerator + nok / r.denominator * r.numerator;
+    newDenominator = nok;
+
     nod = iabs(gcd(newNumerator, newDenominator));
     ratNum(newNumerator / nod, newDenominator / nod);
 }
 
 minusRatNum(l : ratNum, r : ratNum) -> ratNum {
-    newNumerator = l.numerator * r.denominator - r.numerator * l.denominator;
-    newDenominator = l.denominator * r.denominator;
+    nok = lcm(l.denominator, r.denominator);
+    newNumerator = nok / l.denominator * l.numerator - nok / r.denominator * r.numerator;
+    newDenominator = nok;
+
     nod = iabs(gcd(newNumerator, newDenominator));
     ratNum(newNumerator / nod, newDenominator / nod);
 }
 
-mulRatNum(l : ratNum, r : ratNum) -> ratNum {
-    newNumerator = l.numerator * r.numerator ;
-    newDenominator = l.denominator * r.denominator;
+mulRatNum(l : ratNum, r : ratNum) -> ratNum { // A/B * C/D
+    nodAD = iabs(gcd(l.numerator, r.denominator));
+    nodBC = iabs(gcd(l.denominator, r.numerator));
+    newNumerator = l.numerator / nodAD * r.numerator / nodBC;
+    newDenominator = l.denominator / nodBC * r.denominator / nodAD;
+
     nod = iabs(gcd(newNumerator, newDenominator));
     ratNum(newNumerator / nod, newDenominator / nod);
 }
 
-divRatNum(l : ratNum, r : ratNum) -> ratNum {
-    newNumerator = l.numerator * r.denominator;
-    newDenominator = l.denominator * r.numerator;
+divRatNum(l : ratNum, r : ratNum) -> ratNum { // A/B / C/D
+    nodAC = iabs(gcd(l.numerator, r.numerator));
+    nodBD = iabs(gcd(l.denominator, r.denominator));
+    newNumerator = l.numerator / nodAC * r.denominator / nodBD;
+    newDenominator = l.denominator / nodBD * r.numerator / nodAC;
+
     nod = iabs(gcd(newNumerator, newDenominator));
     ratNum(newNumerator / nod, newDenominator / nod);
 }
