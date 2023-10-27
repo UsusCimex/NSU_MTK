@@ -22,58 +22,96 @@ export {
 
     ratNum : (numerator : int, denominator : int);
 
-    sumRatNum(l : ratNum, r : ratNum)                     -> ratNum;
-    minusRatNum(l : ratNum, r : ratNum)                   -> ratNum;
-    mulRatNum(l : ratNum, r : ratNum)                     -> ratNum;
-    divRatNum(l : ratNum, r : ratNum)                     -> ratNum;
-    ratNum2s(rat : ratNum)                                -> string;
+    sumRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
+    minusRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)     -> Maybe<ratNum>;
+    mulRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
+    divRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
+    ratNum2s(rat : Maybe<ratNum>)                         -> string;
     parse(str : string)                                   -> Expr;
     expr2s(v : Expr)                                      -> string;
-    calculateRat(v : Expr, params : Tree<string, ratNum>) -> ratNum;
+    calculateRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratNum>;
 }
 
-sumRatNum(l : ratNum, r : ratNum) -> ratNum {
-    nok = lcm(l.denominator, r.denominator);
-    newNumerator = nok / l.denominator * l.numerator + nok / r.denominator * r.numerator;
-    newDenominator = nok;
+sumRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> {
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratNum(0,0));
+        newR = either(r, ratNum(0,0));
 
-    nod = iabs(gcd(newNumerator, newDenominator));
-    ratNum(newNumerator / nod, newDenominator / nod);
+        nok = lcm(newL.denominator, newR.denominator);
+        newNumerator = nok / newL.denominator * newL.numerator + nok / newR.denominator * newR.numerator;
+        newDenominator = nok;
+
+        nod = iabs(gcd(newNumerator, newDenominator));
+        Some(ratNum(newNumerator / nod, newDenominator / nod));
+    } else {
+        None();
+    }
 }
 
-minusRatNum(l : ratNum, r : ratNum) -> ratNum {
-    nok = lcm(l.denominator, r.denominator);
-    newNumerator = nok / l.denominator * l.numerator - nok / r.denominator * r.numerator;
-    newDenominator = nok;
+minusRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> {
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratNum(0,0));
+        newR = either(r, ratNum(0,0));
 
-    nod = iabs(gcd(newNumerator, newDenominator));
-    ratNum(newNumerator / nod, newDenominator / nod);
+        nok = lcm(newL.denominator, newR.denominator);
+        newNumerator = nok / newL.denominator * newL.numerator - nok / newR.denominator * newR.numerator;
+        newDenominator = nok;
+
+        nod = iabs(gcd(newNumerator, newDenominator));
+        Some(ratNum(newNumerator / nod, newDenominator / nod));
+    } else {
+        None();
+    }
 }
 
-mulRatNum(l : ratNum, r : ratNum) -> ratNum { // A/B * C/D
-    nodAD = iabs(gcd(l.numerator, r.denominator));
-    nodBC = iabs(gcd(l.denominator, r.numerator));
-    newNumerator = l.numerator / nodAD * r.numerator / nodBC;
-    newDenominator = l.denominator / nodBC * r.denominator / nodAD;
+mulRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> { // A/B * C/D
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratNum(0,0));
+        newR = either(r, ratNum(0,0));
 
-    nod = iabs(gcd(newNumerator, newDenominator));
-    ratNum(newNumerator / nod, newDenominator / nod);
+        nodAD = iabs(gcd(newL.numerator, newR.denominator));
+        nodBC = iabs(gcd(newL.denominator, newR.numerator));
+        newNumerator = newL.numerator / nodAD * newR.numerator / nodBC;
+        newDenominator = newL.denominator / nodBC * newR.denominator / nodAD;
+
+        nod = iabs(gcd(newNumerator, newDenominator));
+        Some(ratNum(newNumerator / nod, newDenominator / nod));
+    } else {
+        None();
+    }
 }
 
-divRatNum(l : ratNum, r : ratNum) -> ratNum { // A/B / C/D
-    nodAC = iabs(gcd(l.numerator, r.numerator));
-    nodBD = iabs(gcd(l.denominator, r.denominator));
-    newNumerator = l.numerator / nodAC * r.denominator / nodBD;
-    newDenominator = l.denominator / nodBD * r.numerator / nodAC;
+divRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> { // A/B / C/D
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratNum(0,0));
+        newR = either(r, ratNum(0,0));
 
-    nod = iabs(gcd(newNumerator, newDenominator));
-    ratNum(newNumerator / nod, newDenominator / nod);
+        nodAC = iabs(gcd(newL.numerator, newR.numerator));
+        nodBD = iabs(gcd(newL.denominator, newR.denominator));
+        newNumerator = newL.numerator / nodAC * newR.denominator / nodBD;
+        newDenominator = newL.denominator / nodBD * newR.numerator / nodAC;
+
+        if (newDenominator == 0) {
+            println("Division by zero...");
+            None();
+        } else {
+            nod = iabs(gcd(newNumerator, newDenominator));
+            Some(ratNum(newNumerator / nod, newDenominator / nod));
+        }
+    } else {
+        None();
+    }
 }
 
-ratNum2s(rat : ratNum) -> string {
-    if (rat.denominator == 0) "Division by zero..."
-    else if (rat.denominator == 1) i2s(rat.numerator)
-    else i2s(rat.numerator) + "/" + i2s(rat.denominator);
+ratNum2s(rat : Maybe<ratNum>) -> string {
+    if (isSome(rat)) {
+        newRat = either(rat, ratNum(0,0));
+        if (newRat.denominator == 0) "Division by zero..."
+        else if (newRat.denominator == 1) i2s(newRat.numerator)
+        else i2s(newRat.numerator) + "/" + i2s(newRat.denominator);
+    } else {
+        "Calculate error...";
+    }
 }
 
 parse(str : string) -> Expr {
@@ -97,14 +135,14 @@ expr2s(v : Expr) -> string {
 	}
 }
 
-calculateRat(v : Expr, params : Tree<string, ratNum>) -> ratNum {
+calculateRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratNum> {
     switch (v) {
         Sum(a, b) : sumRatNum(calculateRat(a, params), calculateRat(b, params));
         Mul(a, b) : mulRatNum(calculateRat(a, params), calculateRat(b, params));
         Div(a, b) : divRatNum(calculateRat(a, params), calculateRat(b, params));
         Sub(a, b) : minusRatNum(calculateRat(a, params), calculateRat(b, params));
-        Neg(a)    : mulRatNum(ratNum(-1, 1), calculateRat(a, params)); 
-        Int(a)    : ratNum(a, 1);
-        Var(a)    : either(lookupTree(params, a), ratNum(0, 1));
+        Neg(a)    : mulRatNum(Some(ratNum(-1, 1)), calculateRat(a, params)); 
+        Int(a)    : Some(ratNum(a, 1));
+        Var(a)    : lookupTree(params, a);
     }
 }
