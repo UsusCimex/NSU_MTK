@@ -13,7 +13,10 @@ differentiation(ex : Expr, var : Var) -> Expr {
     switch (ex) {
         Mul(a, b) : 
         {
-            simplification( Sum(Mul(differentiation(a, var), b), Mul(a, differentiation(b, var))) );
+            simplification( Sum(
+                                simplification( Mul(differentiation(a, var), b) ), 
+                                simplification( Mul(a, differentiation(b, var)) )
+                            ));
         }
         Sum(a, b) : 
         {
@@ -25,7 +28,12 @@ differentiation(ex : Expr, var : Var) -> Expr {
         }
         Div(a, b) : 
         {
-            simplification( Div(Sub(Mul(differentiation(a, var), b), Mul(a, differentiation(b, var))), Mul(b, b)) );
+            simplification( Div(
+                                simplification( Sub(
+                                    simplification( Mul(differentiation(a, var), b) ), 
+                                    simplification( Mul(a, differentiation(b, var))) ) ), 
+                                simplification( Mul(b, b) )
+                            ));
         }
         Var(a) : 
         {
@@ -48,31 +56,31 @@ simplification(ex : Expr) -> Expr {
 		Mul(a, b) : 
         {
             if (a == Int(0) || b == Int(0)) Int(0)
-            else if (a == Int(1)) simplification(b)
-            else if (b == Int(1)) simplification(a)
-            else Mul(simplification(a), simplification(b));
+            else if (a == Int(1)) b
+            else if (b == Int(1)) a
+            else Mul(a, b);
         }
 		Sum(a, b) :
         {
-            if (a == Int(0)) simplification(b)
-            else if (b == Int(0)) simplification(a) 
-            else Sum(simplification(a), simplification(b));
+            if (a == Int(0)) b
+            else if (b == Int(0)) a 
+            else Sum(a, b);
         }
         Div(a, b) : 
         {
             if (a == Int(0)) Int(0)
-            else Div(simplification(a), simplification(b));
+            else Div(a, b);
         }
         Sub(a, b) :
         {
-            if (a == Int(0)) Neg(simplification(b))
-            else if (b == Int(0)) simplification(a)
-            else Sub(simplification(a), simplification(b));
+            if (a == Int(0)) Neg(b)
+            else if (b == Int(0)) a
+            else Sub(a, b);
         }
         Neg(a) :
         {
-            if (a == Int(0)) simplification(a)
-            else Neg(simplification(a));
+            if (a == Int(0)) a
+            else Neg(a);
         }
         Int(a) :
         {
