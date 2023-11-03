@@ -81,26 +81,54 @@ simplification(ex : Expr) -> Expr {
                 tInt2 = cast(b : Expr -> Int);
                 Int(tInt.val + tInt2.val);
             }
+            else if (a.structname == "Sum" && b.structname == "Int") {
+                tSum = cast(a : Expr -> Sum);
+                tInt = cast(b : Expr -> Int);
+                if (tSum.lVal.structname == "Int") {
+                    tInt2 = cast(tSum.lVal : Expr -> Int);
+                    simplification( Sum(Int(tInt2.val + tInt.val), tSum.rVal) );
+                } else if (tSum.rVal.structname == "Int") {
+                    tInt2 = cast(tSum.rVal : Expr -> Int);
+                    simplification( Sum(tSum.lVal, Int(tInt2.val + tInt.val)) );
+                } else {
+                    Sum(a, b);
+                }
+            }
+            else if (a.structname == "Int" && b.structname == "Sum") {
+                simplification ( Sum(b, a) );
+            }
+            else if (a.structname == "Sub" && b.structname == "Int") {
+                tSub = cast(a : Expr -> Sub);
+                tInt = cast(b : Expr -> Int);
+                if (tSub.lVal.structname == "Int") {
+                    tInt2 = cast(tSub.lVal : Expr -> Int);
+                    simplification( Sum(Int(tInt.val + tInt2.val), tSub.rVal) );
+                } else if (tSub.rVal.structname == "Int") {
+                    tInt2 = cast(tSub.rVal : Expr -> Int);
+                    simplification( Sum(tSub.lVal, Int(tInt.val - tInt2.val)) );
+                } else {
+                    Sum(a, b);
+                }
+            }
+            else if (a.structname == "Int" && b.structname == "Sub") {
+                simplification( Sum(b, a) );
+            }
+            else if (b.structname == "Neg") {
+                tNeg = cast(b : Expr -> Neg);
+                Sub(a, tNeg.val);
+            }
             else Sum(a, b);
         Div(a, b) : 
             if (a == Int(0)) Int(0)
             else if (a == b) Int(1)
-             else if (a.structname == "Int" && b.structname == "Int") {
+            else if (a.structname == "Int" && b.structname == "Int") {
                 tInt  = cast(a : Expr -> Int);
                 tInt2 = cast(b : Expr -> Int);
                 Int(tInt.val / tInt2.val);
             }
             else Div(a, b);
         Sub(a, b) :
-            if (a == Int(0)) Neg(b)
-            else if (b == Int(0)) a
-            else if (a == b) Int(0)
-             else if (a.structname == "Int" && b.structname == "Int") {
-                tInt  = cast(a : Expr -> Int);
-                tInt2 = cast(b : Expr -> Int);
-                Int(tInt.val - tInt2.val);
-            }
-            else Sub(a, b);
+            simplification( Sum(a, Neg(b)) );
         Neg(a) :
             if (a == Int(0)) a
             else Neg(a);
