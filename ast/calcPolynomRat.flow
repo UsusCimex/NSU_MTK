@@ -4,7 +4,109 @@ import calcDiff;
 Реализуйте функцию преобразования алгебраического выражения в рациональную функцию (отношение двух многочленов).
 */
 
+export {
+    ratPolynom : (numerator : Expr, denominator : Expr);
 
+    sumRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>)  -> Maybe<ratPolynom>;
+    subRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>)  -> Maybe<ratPolynom>;
+    mulRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>)  -> Maybe<ratPolynom>;
+    divRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>)  -> Maybe<ratPolynom>;
+    ratPolynom2s(rat : Maybe<ratPolynom>)                        -> string;
+    calculatePolynomRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratPolynom>;
+}
+
+sumRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratPolynom(Int(0),Int(0)));
+        newR = either(r, ratPolynom(Int(0),Int(0)));
+
+        Some(ratPolynom(simplification( Sum(
+                            simplification( Mul(newL.numerator, newR.denominator) ), 
+                            simplification( Mul(newR.numerator, newL.denominator) )) ), 
+                        simplification( Mul(newL.denominator, newR.denominator) )));
+    } else {
+        None();
+    }
+}
+
+subRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratPolynom(Int(0),Int(0)));
+        newR = either(r, ratPolynom(Int(0),Int(0)));
+
+        Some(ratPolynom(simplification( Sub(
+                            simplification( Mul(newL.numerator, newR.denominator) ), 
+                            simplification( Mul(newR.numerator, newL.denominator) )) ), 
+                        simplification( Mul(newL.denominator, newR.denominator) )));
+    } else {
+        None();
+    }
+}
+
+mulRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratPolynom(Int(0),Int(0)));
+        newR = either(r, ratPolynom(Int(0),Int(0)));
+
+        Some(ratPolynom(simplification( Mul(newL.numerator, newR.numerator) ), 
+                        simplification( Mul(newL.denominator, newR.denominator) )));
+    } else {
+        None();
+    }
+}
+
+divRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
+    if (isSome(l) && isSome(r)) {
+        newL = either(l, ratPolynom(Int(0),Int(0)));
+        newR = either(r, ratPolynom(Int(0),Int(0)));
+
+        Some(ratPolynom(simplification( Mul(newL.numerator, newR.denominator) ), 
+                        simplification( Mul(newL.denominator, newR.numerator) )));
+    } else {
+        None();
+    }
+}
+
+calculatePolynomRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratPolynom> {
+    switch (v) {
+        Sum(a, b) : sumRatPolynom(
+                        calculatePolynomRat(a, params), 
+                        calculatePolynomRat(b, params)
+                    );
+        Mul(a, b) : mulRatPolynom(
+                        calculatePolynomRat(a, params), 
+                        calculatePolynomRat(b, params)
+                    );
+        Div(a, b) : divRatPolynom(
+                        calculatePolynomRat(a, params), 
+                        calculatePolynomRat(b, params)
+                    );
+        Sub(a, b) : subRatPolynom(
+                        calculatePolynomRat(a, params), 
+                        calculatePolynomRat(b, params)
+                    );
+        Neg(a)    : mulRatPolynom(
+                        Some(ratPolynom(Int(-1), Int(1))), 
+                        calculatePolynomRat(a, params)
+                    );
+        Int(a)    : Some(ratPolynom(Int(a), Int(1)));
+        Var(a)    : switch(lookupTree(params, a)) {
+                        Some(p) : Some(ratPolynom(Int(p.numerator), Int(p.denominator)));
+                        None()  : Some(ratPolynom(Var(a), Int(1)));
+                    }
+    }
+}
+
+ratPolynom2s(rat : Maybe<ratPolynom>) -> string {
+    if (isSome(rat)) {
+        newRat = either(rat, ratPolynom(Int(0),Int(0)));
+        if (newRat.denominator == Int(0)) "Division by zero..."
+        else if (newRat.denominator == Int(1)) expr2s(newRat.numerator)
+        else expr2s(newRat.numerator) + "/" + expr2s(newRat.denominator);
+    } else {
+        "Calculate error...";
+    }
+}
 
 /*
 Реализуйте функцию упрощения рациональной функции по заданному набору тождеств.

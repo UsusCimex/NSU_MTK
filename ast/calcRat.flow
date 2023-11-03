@@ -23,7 +23,7 @@ export {
     ratNum : (numerator : int, denominator : int);
 
     sumRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
-    minusRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)     -> Maybe<ratNum>;
+    subRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
     mulRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
     divRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>)       -> Maybe<ratNum>;
     ratNum2s(rat : Maybe<ratNum>)                         -> string;
@@ -48,7 +48,7 @@ sumRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> {
     }
 }
 
-minusRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> {
+subRatNum(l : Maybe<ratNum>, r : Maybe<ratNum>) -> Maybe<ratNum> {
     if (isSome(l) && isSome(r)) {
         newL = either(l, ratNum(0,0));
         newR = either(r, ratNum(0,0));
@@ -140,7 +140,7 @@ calculateRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratNum> {
         Sum(a, b) : sumRatNum(calculateRat(a, params), calculateRat(b, params));
         Mul(a, b) : mulRatNum(calculateRat(a, params), calculateRat(b, params));
         Div(a, b) : divRatNum(calculateRat(a, params), calculateRat(b, params));
-        Sub(a, b) : minusRatNum(calculateRat(a, params), calculateRat(b, params));
+        Sub(a, b) : subRatNum(calculateRat(a, params), calculateRat(b, params));
         Neg(a)    : mulRatNum(Some(ratNum(-1, 1)), calculateRat(a, params)); 
         Int(a)    : Some(ratNum(a, 1));
         Var(a)    : lookupTree(params, a);

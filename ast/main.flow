@@ -1,7 +1,8 @@
 // import calc;
 // import calcRpn;
 // import calcRat;
-import calcDiff;
+// import calcDiff;
+import calcPolynomRat;
 
 
 main() {
@@ -35,29 +36,32 @@ main() {
     // println(ratNum2s(solveRat));
 
     //Differentiation test
-    testDifferential = "((5 * x) + 5)";
-    testDifferetial2 = "((((5*x)*x) + (3*x)) + 1)";
-    testDifferetial3 = "(1/x)";
+    // testDifferential = "(x/x)";
+    // testDifferetial2 = "((((5*x)*x) + (3*x)) + 1)";
+    // testDifferetial3 = "(1/x)";
 
-    exp = parse(testDifferential);
-    println("func1: " + expr2s(exp));
-    diffExp = differentiation(exp, Var("x"));
-    println("Differencial fucn1: " + expr2s(diffExp) + "\n");
+    // exp = parse(testDifferential);
+    // println("func1: " + expr2s(exp));
+    // diffExp = differentiation(exp, Var("x"));
+    // println("Differencial fucn1: " + expr2s(diffExp) + "\n");
 
-    exp2 = parse(testDifferetial2);
-    println("func2: " + expr2s(exp2));
-    diffExp2 = differentiation(exp2, Var("x"));
-    println("Differencial fucn2: " + expr2s(diffExp2) + "\n");
+    // exp2 = parse(testDifferetial2);
+    // println("func2: " + expr2s(exp2));
+    // diffExp2 = differentiation(exp2, Var("x"));
+    // println("Differencial fucn2: " + expr2s(diffExp2) + "\n");
     
-    exp3 = parse(testDifferetial3);
-    println("func3: " + expr2s(exp3));
-    diffExp3 = differentiation(exp3, Var("x"));
-    println("Differencial fucn3: " + expr2s(diffExp3) + "\n");
-
-
+    // exp3 = parse(testDifferetial3);
+    // println("func3: " + expr2s(exp3));
+    // diffExp3 = differentiation(exp3, Var("x"));
+    // println("Differencial fucn3: " + expr2s(diffExp3) + "\n");
 
     //Polynom calculator test
-    
+    testPolynom = "(((x*x)/x) + x)";
+    exp = parse(testPolynom);
+    println("func: " + expr2s(exp));
+    params = setTreeValues(makeTree(), [Pair("x", ratNum(1, 2))]);
+    polynom = calculatePolynomRat(exp, params);
+    println("polynom: " + ratPolynom2s(polynom));
 
     quit(0);
 }

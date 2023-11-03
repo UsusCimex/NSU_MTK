@@ -7,6 +7,7 @@ import calcRat;
 
 export {
     differentiation(ex : Expr, var : Var) -> Expr;
+    simplification(ex : Expr)             -> Expr;
 }
 
 differentiation(ex : Expr, var : Var) -> Expr {
@@ -64,17 +65,20 @@ simplification(ex : Expr) -> Expr {
         {
             if (a == Int(0)) b
             else if (b == Int(0)) a 
+            else if (a == b) Mul(Int(2), a)
             else Sum(a, b);
         }
         Div(a, b) : 
         {
             if (a == Int(0)) Int(0)
+            else if (a == b) Int(1)
             else Div(a, b);
         }
         Sub(a, b) :
         {
             if (a == Int(0)) Neg(b)
             else if (b == Int(0)) a
+            else if (a == b) Int(0)
             else Sub(a, b);
         }
         Neg(a) :

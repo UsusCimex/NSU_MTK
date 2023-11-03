@@ -18,8 +18,6 @@ export {
     expr2s(ex : Expr)    -> string;
 }
 
-
-
 parse(str : string) -> Expr {
     e_gr = "#include grammar/grammar.lingo";
     parsic(
