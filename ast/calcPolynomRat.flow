@@ -69,31 +69,38 @@ divRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom>
 
 calculatePolynomRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratPolynom> {
     switch (v) {
-        Sum(a, b) : sumRatPolynom(
-                        calculatePolynomRat(a, params), 
-                        calculatePolynomRat(b, params)
-                    );
-        Mul(a, b) : mulRatPolynom(
-                        calculatePolynomRat(a, params), 
-                        calculatePolynomRat(b, params)
-                    );
-        Div(a, b) : divRatPolynom(
-                        calculatePolynomRat(a, params), 
-                        calculatePolynomRat(b, params)
-                    );
-        Sub(a, b) : subRatPolynom(
-                        calculatePolynomRat(a, params), 
-                        calculatePolynomRat(b, params)
-                    );
-        Neg(a)    : mulRatPolynom(
-                        Some(ratPolynom(Int(-1), Int(1))), 
-                        calculatePolynomRat(a, params)
-                    );
-        Int(a)    : Some(ratPolynom(Int(a), Int(1)));
-        Var(a)    : switch(lookupTree(params, a)) {
-                        Some(p) : Some(ratPolynom(Int(p.numerator), Int(p.denominator)));
-                        None()  : Some(ratPolynom(Var(a), Int(1)));
-                    }
+        Sum(a, b) : 
+            sumRatPolynom(
+                calculatePolynomRat(a, params), 
+                calculatePolynomRat(b, params)
+            );
+        Mul(a, b) : 
+            mulRatPolynom(
+                calculatePolynomRat(a, params), 
+                calculatePolynomRat(b, params)
+            );
+        Div(a, b) : 
+            divRatPolynom(
+                calculatePolynomRat(a, params), 
+                calculatePolynomRat(b, params)
+            );
+        Sub(a, b) : 
+            subRatPolynom(
+                calculatePolynomRat(a, params), 
+                calculatePolynomRat(b, params)
+            );
+        Neg(a) : 
+            mulRatPolynom(
+                Some(ratPolynom(Int(-1), Int(1))), 
+                calculatePolynomRat(a, params)
+            );
+        Int(a) : 
+            Some(ratPolynom(Int(a), Int(1)));
+        Var(a) : 
+            switch(lookupTree(params, a)) {
+                Some(p) : Some(ratPolynom(Int(p.numerator), Int(p.denominator)));
+                None()  : Some(ratPolynom(Var(a), Int(1)));
+            }
     }
 }
 

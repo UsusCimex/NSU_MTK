@@ -13,86 +13,64 @@ export {
 differentiation(ex : Expr, var : Var) -> Expr {
     switch (ex) {
         Mul(a, b) : 
-        {
             simplification( Sum(
-                                simplification( Mul(differentiation(a, var), b) ), 
-                                simplification( Mul(a, differentiation(b, var)) )
-                            ));
-        }
+                simplification( Mul(differentiation(a, var), b) ), 
+                simplification( Mul(a, differentiation(b, var)) ))
+            );
         Sum(a, b) : 
-        {
-            simplification( Sum(differentiation(a, var), differentiation(b, var)) );
-        }
+            simplification( Sum(
+                differentiation(a, var), 
+                differentiation(b, var))
+            );
         Sub(a, b) : 
-        {
-            simplification( Sub(differentiation(a, var), differentiation(b, var)) );
-        }
+            simplification( Sub(
+                differentiation(a, var), 
+                differentiation(b, var))
+            );
         Div(a, b) : 
-        {
             simplification( Div(
-                                simplification( Sub(
-                                    simplification( Mul(differentiation(a, var), b) ), 
-                                    simplification( Mul(a, differentiation(b, var))) ) ), 
-                                simplification( Mul(b, b) )
-                            ));
-        }
+                simplification( Sub(
+                    simplification( Mul(differentiation(a, var), b) ), 
+                    simplification( Mul(a, differentiation(b, var))) ) ), 
+                simplification( Mul(b, b) ))
+            );
         Var(a) : 
-        {
             if (a == var.val) Int(1)
             else Int(0);
-        }
         Int(a) : 
-        {
             Int(0);
-        }
         Neg(a) : 
-        {
             simplification( Neg(differentiation(a, var)) );
-        }
     }
 }
 
 simplification(ex : Expr) -> Expr {
     switch (ex) {
 		Mul(a, b) : 
-        {
             if (a == Int(0) || b == Int(0)) Int(0)
             else if (a == Int(1)) b
             else if (b == Int(1)) a
             else Mul(a, b);
-        }
 		Sum(a, b) :
-        {
             if (a == Int(0)) b
             else if (b == Int(0)) a 
             else if (a == b) Mul(Int(2), a)
             else Sum(a, b);
-        }
         Div(a, b) : 
-        {
             if (a == Int(0)) Int(0)
             else if (a == b) Int(1)
             else Div(a, b);
-        }
         Sub(a, b) :
-        {
             if (a == Int(0)) Neg(b)
             else if (b == Int(0)) a
             else if (a == b) Int(0)
             else Sub(a, b);
-        }
         Neg(a) :
-        {
             if (a == Int(0)) a
             else Neg(a);
-        }
         Int(a) :
-        {
             Int(a);
-        }
         Var(a) :
-        {
             Var(a);
-        }
 	}
 }
