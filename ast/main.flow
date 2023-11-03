@@ -36,14 +36,14 @@ main() {
     // println(ratNum2s(solveRat));
 
     //Differentiation test
-    // testDifferential = "(x/x)";
+    testDifferential = "((1/x) + (((3*(x*x)) - (2*x)) + (3 * x)))";
     // testDifferetial2 = "((((5*x)*x) + (3*x)) + 1)";
     // testDifferetial3 = "(1/x)";
 
-    // exp = parse(testDifferential);
-    // println("func1: " + expr2s(exp));
-    // diffExp = differentiation(exp, Var("x"));
-    // println("Differencial fucn1: " + expr2s(diffExp) + "\n");
+    exp = parse(testDifferential);
+    println("func1: " + expr2s(exp));
+    diffExp = differentiation(exp, Var("x"));
+    println("Differencial fucn1: " + expr2s(diffExp) + "\n");
 
     // exp2 = parse(testDifferetial2);
     // println("func2: " + expr2s(exp2));
@@ -56,12 +56,12 @@ main() {
     // println("Differencial fucn3: " + expr2s(diffExp3) + "\n");
 
     //Polynom calculator test
-    testPolynom = "(((x*x)/x) + x)";
-    exp = parse(testPolynom);
-    println("func: " + expr2s(exp));
-    params = setTreeValues(makeTree(), [Pair("x", ratNum(1, 2))]);
-    polynom = calculatePolynomRat(exp, params);
-    println("polynom: " + ratPolynom2s(polynom));
+    // testPolynom = "(((x*x)/x) + x)";
+    // exp = parse(testPolynom);
+    // println("func: " + expr2s(exp));
+    // params = setTreeValues(makeTree(), [Pair("x", ratNum(1, 2))]);
+    // polynom = calculatePolynomRat(exp, params);
+    // println("polynom: " + ratPolynom2s(polynom));
 
     quit(0);
 }

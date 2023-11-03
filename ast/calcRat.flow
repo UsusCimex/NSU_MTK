@@ -129,7 +129,7 @@ expr2s(v : Expr) -> string {
 		Sum(a, b) : "(" + expr2s(a) + "+" + expr2s(b) + ")";
         Div(a, b) : "(" + expr2s(a) + "/" + expr2s(b) + ")";
         Sub(a, b) : "(" + expr2s(a) + "-" + expr2s(b) + ")";
-        Neg(a)    : "-" + expr2s(a);
+        Neg(a)    : "(-" + expr2s(a) + ")";
         Int(a)    : i2s(a);
         Var(a)    : a;
 	}
