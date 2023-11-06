@@ -13,6 +13,25 @@ export {
     divRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>)  -> Maybe<ratPolynom>;
     ratPolynom2s(rat : Maybe<ratPolynom>)                        -> string;
     calculatePolynomRat(v : Expr, params : Tree<string, ratNum>) -> Maybe<ratPolynom>;
+    simplificationRat(rat : Maybe<ratPolynom>)                   -> Maybe<ratPolynom>;
+}
+
+simplificationRat(rat : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
+    switch (rat) {
+        Some(v) : {
+            if (v.numerator.structname == "Int" && v.denominator.structname == "Int") {
+                tInt  = cast(v.numerator : Expr -> Int);
+                tInt2 = cast(v.denominator : Expr -> Int);
+                switch(divRatNum(Some(ratNum(tInt.val, 1)), Some(ratNum(tInt2.val, 1)))) {
+                    Some(v2) : Some(ratPolynom(Int(v2.numerator), Int(v2.denominator)));
+                    None() : None();
+                }
+            } else {
+                rat;
+            }
+        }
+        None() : None();
+    }
 }
 
 sumRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
@@ -20,10 +39,13 @@ sumRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom>
         newL = either(l, ratPolynom(Int(0),Int(0)));
         newR = either(r, ratPolynom(Int(0),Int(0)));
 
-        Some(ratPolynom(simplification( Sum(
+        if (newL.numerator == Int(0)) r
+        else if (newR.numerator == Int(0)) l
+        else simplificationRat(Some( ratPolynom(
+                        simplification( Sum(
                             simplification( Mul(newL.numerator, newR.denominator) ), 
                             simplification( Mul(newR.numerator, newL.denominator) )) ), 
-                        simplification( Mul(newL.denominator, newR.denominator) )));
+                        simplification( Mul(newL.denominator, newR.denominator) ))));
     } else {
         None();
     }
@@ -34,10 +56,13 @@ subRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom>
         newL = either(l, ratPolynom(Int(0),Int(0)));
         newR = either(r, ratPolynom(Int(0),Int(0)));
 
-        Some(ratPolynom(simplification( Sub(
+        if (newL.numerator == Int(0)) mulRatPolynom(Some(ratPolynom(Int(-1), Int(1))), r)
+        else if (newR.numerator == Int(0)) l
+        else simplificationRat(Some( ratPolynom(
+                        simplification( Sub(
                             simplification( Mul(newL.numerator, newR.denominator) ), 
                             simplification( Mul(newR.numerator, newL.denominator) )) ), 
-                        simplification( Mul(newL.denominator, newR.denominator) )));
+                        simplification( Mul(newL.denominator, newR.denominator) ))));
     } else {
         None();
     }
@@ -48,8 +73,12 @@ mulRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom>
         newL = either(l, ratPolynom(Int(0),Int(0)));
         newR = either(r, ratPolynom(Int(0),Int(0)));
 
-        Some(ratPolynom(simplification( Mul(newL.numerator, newR.numerator) ), 
-                        simplification( Mul(newL.denominator, newR.denominator) )));
+        if (newL.numerator == Int(0) || newR.numerator == Int(0))
+            Some(ratPolynom(Int(0), Int(1)))
+        else
+            simplificationRat(Some( ratPolynom(
+                        simplification( Mul(newL.numerator, newR.numerator) ), 
+                        simplification( Mul(newL.denominator, newR.denominator) ))));
     } else {
         None();
     }
@@ -60,8 +89,12 @@ divRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>) -> Maybe<ratPolynom>
         newL = either(l, ratPolynom(Int(0),Int(0)));
         newR = either(r, ratPolynom(Int(0),Int(0)));
 
-        Some(ratPolynom(simplification( Mul(newL.numerator, newR.denominator) ), 
-                        simplification( Mul(newL.denominator, newR.numerator) )));
+        if (newL.numerator == Int(0))
+            Some(ratPolynom(Int(0), Int(1)))
+        else
+            simplificationRat(Some( ratPolynom(
+                        simplification( Mul(newL.numerator, newR.denominator) ), 
+                        simplification( Mul(newL.denominator, newR.numerator) ))));
     } else {
         None();
     }
