@@ -27,10 +27,68 @@ simplificationRat(rat : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
                     None() : None();
                 }
             } else {
+                numerator = v.numerator;
+                denominator = v.denominator;
+                tr = makeTree();
+                trNum = getPolynomTree(numerator, tr);
+                trDen = getPolynomTree(denominator, tr);
+                // need logic 0_0 xD
                 rat;
             }
         }
         None() : None();
+    }
+}
+
+getPolynomTree(ex : Expr, tree : Tree<int, int>) -> Tree<int, int> {
+    switch (ex) {
+		Mul(a, b) : {
+            mp = getMonomialOrder(ex);
+            p = either(mp, Pair(0, 0));
+            switch (lookupTree(tree, p.first)) {
+                Some(v) : setTree(tree, p.first, p.second + v);
+                None() : setTree(tree, p.first, p.second);
+            }
+        }
+		Sum(a, b) : {
+            tr = getPolynomTree(a, tree);
+            getPolynomTree(b, tr);
+        }
+        Div(a, b) : tree;
+        Sub(a, b) : {
+            tr = getPolynomTree(a, tree);
+            getPolynomTree(b, tr);
+        }
+        Neg(a)    : getPolynomTree(a, tree);
+        Int(a)    : switch(lookupTree(tree, 0)) {
+                        Some(v) : setTree(tree, 0, v + a);
+                        None() : setTree(tree, 0, a);
+                    }
+        Var(a)    : switch(lookupTree(tree, 1)) {
+                        Some(v) : setTree(tree, 1, v + 1);
+                        None() : setTree(tree, 1, 1);
+                    }
+	}
+}
+
+// Return pair(oder, value)
+getMonomialOrder(ex : Expr) -> Maybe<Pair<int, int>> {
+    switch (ex) {
+        Int(a)    : Some(Pair(0, a));
+        Neg(a)    : getMonomialOrder(a);
+        Sum(a, b) : None();
+        Sub(a, b) : None();
+        Div(a, b) : None();
+        Mul(a, b) : {
+            p = if (a.structname == "Var") getMonomialOrder(b)
+                else getMonomialOrder(a);
+            
+            switch (p) {
+                Some(val) : Some(Pair(1 + val.first, val.second));
+                None() : None();
+            }
+        };
+        Var(a) : Some(Pair(1, 1));
     }
 }
 
