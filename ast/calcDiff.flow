@@ -48,8 +48,8 @@ simplification(ex : Expr) -> Expr {
     switch (ex) {
 		Mul(a, b) : 
             if (a == Int(0) || b == Int(0)) Int(0)
-            else if (a == Int(1)) b
-            else if (b == Int(1)) a
+            else if (a == Int(1)) simplification( b )
+            else if (b == Int(1)) simplification( a )
             else if (a.structname == "Int" && b.structname == "Mul") {
                 tInt = cast(a : Expr -> Int);
                 tMul = cast(b : Expr -> Mul);
@@ -64,7 +64,7 @@ simplification(ex : Expr) -> Expr {
                 }
             }
             else if (a.structname == "Mul" && b.structname == "Int") {
-                simplification ( Mul(b, a) )
+                simplification( Mul(b, a) )
             }
             else if (a.structname == "Int" && b.structname == "Int") {
                 tInt  = cast(a : Expr -> Int);
@@ -73,8 +73,8 @@ simplification(ex : Expr) -> Expr {
             }
             else Mul(a, b);
 		Sum(a, b) :
-            if (a == Int(0)) b
-            else if (b == Int(0)) a 
+            if (a == Int(0)) simplification( b )
+            else if (b == Int(0)) simplification( a ) 
             else if (a == b) simplification( Mul(Int(2), a) )
             else if (a.structname == "Int" && b.structname == "Int") {
                 tInt  = cast(a : Expr -> Int);
@@ -131,6 +131,10 @@ simplification(ex : Expr) -> Expr {
             simplification( Sum(a, Neg(b)) );
         Neg(a) :
             if (a == Int(0)) a
+            else if (a.structname == "Neg") {
+                tNeg = cast(a : Expr -> Neg);
+                tNeg.val;
+            }
             else Neg(a);
         Int(a) :
             Int(a);
