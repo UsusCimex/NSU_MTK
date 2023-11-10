@@ -247,7 +247,7 @@ calculatePolynomRat(v : Expr, params : Tree<string, ratNum>, var : Var) -> Maybe
         Var(a) : 
             switch(lookupTree(params, a)) {
                 Some(p) : Some(ratPolynom(Int(p.numerator), Int(p.denominator)));
-                None()  : Some(ratPolynom(v), Int(1)));
+                None()  : Some(ratPolynom(v, Int(1)));
             }
     }
 }
