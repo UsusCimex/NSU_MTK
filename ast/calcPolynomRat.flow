@@ -30,36 +30,38 @@ simplificationRat(rat : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
                 numerator = v.numerator;
                 denominator = v.denominator;
                 tr = makeTree();
-                trNum = getPolynomTree(numerator, tr);
-                trDen = getPolynomTree(denominator, tr);
-                // need logic 0_0 xD
-                rat;
+                trNum = polynom2tree(numerator, tr);
+                trDen = polynom2tree(denominator, tr);
+                
+                newNumerator = tree2polynom(trNum, Var("x"));
+                newDenominator = tree2polynom(trDen, Var("x"));
+
+                Some(ratPolynom(newNumerator, newDenominator));
             }
         }
         None() : None();
     }
 }
 
-getPolynomTree(ex : Expr, tree : Tree<int, int>) -> Tree<int, int> {
+polynom2tree(ex : Expr, tree : Tree<int, int>) -> Tree<int, int> {
     switch (ex) {
 		Mul(a, b) : {
-            mp = getMonomialOrder(ex);
-            p = either(mp, Pair(0, 0));
+            p = getMonomialOrder(ex);
             switch (lookupTree(tree, p.first)) {
                 Some(v) : setTree(tree, p.first, p.second + v);
                 None() : setTree(tree, p.first, p.second);
             }
         }
 		Sum(a, b) : {
-            tr = getPolynomTree(a, tree);
-            getPolynomTree(b, tr);
+            tr = polynom2tree(a, tree);
+            polynom2tree(b, tr);
         }
         Div(a, b) : tree;
         Sub(a, b) : {
-            tr = getPolynomTree(a, tree);
-            getPolynomTree(b, tr);
+            tr = polynom2tree(a, tree);
+            polynom2tree(b, tr);
         }
-        Neg(a)    : getPolynomTree(a, tree);
+        Neg(a)    : polynom2tree(a, tree);
         Int(a)    : switch(lookupTree(tree, 0)) {
                         Some(v) : setTree(tree, 0, v + a);
                         None() : setTree(tree, 0, a);
@@ -71,24 +73,32 @@ getPolynomTree(ex : Expr, tree : Tree<int, int>) -> Tree<int, int> {
 	}
 }
 
+tree2polynom(tree : Tree<int, int>, var : Var) -> Expr {
+    switch (popmin(tree)) {
+        PopResult(k, v, rest) : simplification( Sum(tree2polynom(rest, var), getMonomial(k, v, var)) );
+        EmptyPopResult()      : Int(0);
+    }
+}
+
+getMonomial(order : int, value : int, var : Var) -> Expr {
+    if (order <= 0) Int(value)
+    else simplification( Mul(getMonomial(order - 1, value, var), var) ); 
+}
+
 // Return pair(oder, value)
-getMonomialOrder(ex : Expr) -> Maybe<Pair<int, int>> {
+getMonomialOrder(ex : Expr) -> Pair<int, int> {
     switch (ex) {
-        Int(a)    : Some(Pair(0, a));
+        Int(a)    : Pair(0, a);
         Neg(a)    : getMonomialOrder(a);
-        Sum(a, b) : None();
-        Sub(a, b) : None();
-        Div(a, b) : None();
+        Sum(a, b) : Pair(0,0);
+        Sub(a, b) : Pair(0,0);
+        Div(a, b) : Pair(0,0);
         Mul(a, b) : {
-            p = if (a.structname == "Var") getMonomialOrder(b)
-                else getMonomialOrder(a);
-            
-            switch (p) {
-                Some(val) : Some(Pair(1 + val.first, val.second));
-                None() : None();
-            }
+            m1 = getMonomialOrder(a);
+            m2 = getMonomialOrder(b);
+            Pair(m1.first + m2.first, m1.second * m2.second);
         };
-        Var(a) : Some(Pair(1, 1));
+        Var(a) : Pair(1, 1);
     }
 }
 
