@@ -19,27 +19,18 @@ export {
 simplificationRat(rat : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
     switch (rat) {
         Some(v) : {
-            if (v.numerator.structname == "Int" && v.denominator.structname == "Int") {
-                tInt  = cast(v.numerator : Expr -> Int);
-                tInt2 = cast(v.denominator : Expr -> Int);
-                switch(divRatNum(Some(ratNum(tInt.val, 1)), Some(ratNum(tInt2.val, 1)))) {
-                    Some(v2) : Some(ratPolynom(Int(v2.numerator), Int(v2.denominator)));
-                    None() : None();
-                }
-            } else {
-                numerator = v.numerator;
-                denominator = v.denominator;
-                tr = makeTree();
-                trNum = polynom2tree(numerator, tr);
-                trDen = polynom2tree(denominator, tr);
+            numerator = v.numerator;
+            denominator = v.denominator;
+            tr = makeTree();
+            trNum = polynom2tree(numerator, tr);
+            trDen = polynom2tree(denominator, tr);
 
-                newTrees = treeCutting(trNum, trDen);
-                
-                newNumerator = tree2polynom(newTrees.first, Var("x"));
-                newDenominator = tree2polynom(newTrees.second, Var("x"));
+            newTrees = treeCutting(trNum, trDen);
+            
+            newNumerator = tree2polynom(newTrees.first, Var("x"));
+            newDenominator = tree2polynom(newTrees.second, Var("x"));
 
-                Some(ratPolynom(newNumerator, newDenominator));
-            }
+            Some(ratPolynom(newNumerator, newDenominator));
         }
         None() : None();
     }
