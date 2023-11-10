@@ -32,15 +32,35 @@ simplificationRat(rat : Maybe<ratPolynom>) -> Maybe<ratPolynom> {
                 tr = makeTree();
                 trNum = polynom2tree(numerator, tr);
                 trDen = polynom2tree(denominator, tr);
+
+                newTrees = treeCutting(trNum, trDen);
                 
-                newNumerator = tree2polynom(trNum, Var("x"));
-                newDenominator = tree2polynom(trDen, Var("x"));
+                newNumerator = tree2polynom(newTrees.first, Var("x"));
+                newDenominator = tree2polynom(newTrees.second, Var("x"));
 
                 Some(ratPolynom(newNumerator, newDenominator));
             }
         }
         None() : None();
     }
+}
+
+treeCutting(tree1 : Tree<int, int>, tree2 : Tree<int, int>) -> Pair<Tree<int, int>, Tree<int, int>> {
+    t1 = switch(popmin(tree1)) {
+            PopResult(k, v, rest) : Pair(k, v);
+            EmptyPopResult()      : Pair(0, 1);
+        }
+    t2 = switch(popmin(tree2)) {
+            PopResult(k, v, rest) : Pair(k, v);
+            EmptyPopResult()      : Pair(0, 1);
+        }
+
+    nod = gcdA(concat(getTreeValues(tree1), getTreeValues(tree2)));
+
+    mn = min(t1.first, t2.first);
+    res1 = foldTree(tree1, makeTree(), \k,v,res -> setTree(res, k - mn, v / nod));
+    res2 = foldTree(tree2, makeTree(), \k,v,res -> setTree(res, k - mn, v / nod));
+    Pair(res1, res2);
 }
 
 polynom2tree(ex : Expr, tree : Tree<int, int>) -> Tree<int, int> {
@@ -58,8 +78,9 @@ polynom2tree(ex : Expr, tree : Tree<int, int>) -> Tree<int, int> {
         }
         Div(a, b) : tree;
         Sub(a, b) : {
-            tr = polynom2tree(a, tree);
-            polynom2tree(b, tr);
+            tr = polynom2tree(b, tree);
+            mTr = foldTree(tr, makeTree(), \k,v,res -> setTree(res, k, -v));
+            polynom2tree(a, mTr);
         }
         Neg(a)    : polynom2tree(a, tree);
         Int(a)    : switch(lookupTree(tree, 0)) {
