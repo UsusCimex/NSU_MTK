@@ -108,6 +108,21 @@ simplification(ex : Expr) -> Expr {
             else if (a.structname == "Sum" && b.structname == "Mul") {
                 simplification( Mul(b,a) );
             }
+            else if (a.structname == "Sum" || b.structname == "Sum") {
+                if (a.structname == "Sum") {
+                    tSum = cast(a : Expr -> Sum);
+                    simplification( Sum(
+                        simplification( Mul(tSum.lVal, b) ),
+                        simplification( Mul(tSum.rVal, b) )
+                    ));
+                } else {
+                    tSum = cast(b : Expr -> Sum);
+                    simplification( Sum(
+                        simplification( Mul(a, tSum.lVal) ),
+                        simplification( Mul(a, tSum.rVal) )
+                    ));
+                }
+            }
             else Mul(a, b);
 		Sum(a, b) :
             if (a == Int(0)) simplification( b )
