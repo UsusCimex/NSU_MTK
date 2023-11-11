@@ -25,10 +25,23 @@ simplificationRat(rat : Maybe<ratPolynom>, var : Var) -> Maybe<ratPolynom> {
             trNum = polynom2tree(numerator, tr, var);
             trDen = polynom2tree(denominator, tr, var);
 
+            // println("================"); // DEBUG
+            // println("Old: " + expr2s(numerator));
+            // println(expr2s(lookupTreeDef(trNum, 0, Int(0))));
+            // println(expr2s(lookupTreeDef(trNum, 1, Int(0))));
+            // println(expr2s(lookupTreeDef(trNum, 2, Int(0))));
+            // println(expr2s(lookupTreeDef(trNum, 3, Int(0))));
+
             newTrees = treeCutting(trNum, trDen);
             
             newNumerator = tree2polynom(newTrees.first, var);
             newDenominator = tree2polynom(newTrees.second, var);
+            
+            // println("New: " + expr2s(newNumerator));
+            // println(expr2s(lookupTreeDef(newTrees.first, 0, Int(0))));
+            // println(expr2s(lookupTreeDef(newTrees.first, 1, Int(0))));
+            // println(expr2s(lookupTreeDef(newTrees.first, 2, Int(0))));
+            // println(expr2s(lookupTreeDef(newTrees.first, 3, Int(0))));
 
             Some(ratPolynom(newNumerator, newDenominator));
         }
@@ -107,10 +120,14 @@ polynom2tree(ex : Expr, tree : Tree<int, Expr>, var : Var) -> Tree<int, Expr> {
                         Some(v) : setTree(tree, 0, simplification( Sum(v, ex) ));
                         None() : setTree(tree, 0, ex);
                     }
-        Var(a)    : switch(lookupTree(tree, 1)) {
-                        Some(v) : setTree(tree, 1, Sum(v, Int(1)));
-                        None() : setTree(tree, 1, Int(1));
-                    }
+        Var(a)    : if (ex == var) switch(lookupTree(tree, 1)) {
+                            Some(v) : setTree(tree, 1, simplification( Sum(v, Int(1)) ));
+                            None() : setTree(tree, 1, Int(1));
+                        }
+                    else switch(lookupTree(tree, 0)) {
+                            Some(v) : setTree(tree, 0, simplification( Sum(v, ex)) );
+                            None() : setTree(tree, 0, ex);
+                        }
 	}
 }
 
@@ -131,9 +148,9 @@ getMonomialOrder(ex : Expr, var : Var) -> Pair<int, Expr> {
     switch (ex) {
         Int(a)    : Pair(0, ex);
         Neg(a)    : getMonomialOrder(a, var);
-        Sum(a, b) : Pair(0, Int(0));
-        Sub(a, b) : Pair(0, Int(0));
-        Div(a, b) : Pair(0, Int(0));
+        Sum(a, b) : Pair(0, ex);
+        Sub(a, b) : Pair(0, ex);
+        Div(a, b) : Pair(0, ex);
         Mul(a, b) : {
             m1 = getMonomialOrder(a, var);
             m2 = getMonomialOrder(b, var);
