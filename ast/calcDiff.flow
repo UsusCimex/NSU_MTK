@@ -52,11 +52,11 @@ simplification(ex : Expr) -> Expr {
             else if (b == Int(1)) simplification( a )
             else if (a.structname == "Neg") {
                 tNeg = cast(a : Expr -> Neg);
-                Neg(simplification( Mul(tNeg.val, b) ));
+                simplification( Neg(Mul(tNeg.val, b) ));
             } 
             else if (b.structname == "Neg") {
                 tNeg = cast(b : Expr -> Neg);
-                Neg(simplification( Mul(a, tNeg.val) ));
+                simplification( Neg(Mul(a, tNeg.val) ));
             } 
             else if (a.structname == "Int" && b.structname == "Mul") {
                 tInt = cast(a : Expr -> Int);
@@ -267,11 +267,12 @@ simplification(ex : Expr) -> Expr {
             if (a == Int(0)) a
             else if (a.structname == "Neg") {
                 tNeg = cast(a : Expr -> Neg);
-                tNeg.val;
+                simplification( tNeg.val );
             }
-            else Neg(a);
+            else Neg(simplification( a ));
         Int(a) :
-            Int(a);
+            if (a < 0) Neg(Int(-a))
+            else Int(a);
         Var(a) :
             Var(a);
 	}

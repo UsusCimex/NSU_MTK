@@ -16,6 +16,8 @@ export {
     simplificationRat(rat : Maybe<ratPolynom>, var : Var)                   -> Maybe<ratPolynom>;
     ratPolynom2Expr(rat : ratPolynom)                                       -> Expr;
     calculatePolynomRatArr(v : Expr, params : Tree<string, ratNum>, vars : [Var], resVar : Var) -> Maybe<ratPolynom>;
+
+    simplificationByIdentity(polynom : Maybe<ratPolynom>, identity : Tree<Expr, Expr>) -> Maybe<ratPolynom>;
 }
 
 simplificationRat(rat : Maybe<ratPolynom>, var : Var) -> Maybe<ratPolynom> {
@@ -117,7 +119,10 @@ polynom2tree(ex : Expr, tree : Tree<int, Expr>, var : Var) -> Tree<int, Expr> {
             mTr = foldTree(tr, makeTree(), \k,v,res -> setTree(res, k, simplification( Neg(v) )));
             polynom2tree(a, mTr, var);
         }
-        Neg(a)    : polynom2tree(a, tree, var);
+        Neg(a)    : {
+            tr = polynom2tree(a, tree, var);
+            foldTree(tr, makeTree(), \k,v,res -> setTree(res, k, simplification( Neg(v) )));
+        }
         Int(a)    : switch(lookupTree(tree, 0)) {
                         Some(v) : setTree(tree, 0, simplification( Sum(v, ex) ));
                         None() : setTree(tree, 0, ex);
@@ -149,7 +154,10 @@ getMonomial(order : int, value : Expr, var : Var) -> Expr {
 getMonomialOrder(ex : Expr, var : Var) -> Pair<int, Expr> {
     switch (ex) {
         Int(a)    : Pair(0, ex);
-        Neg(a)    : getMonomialOrder(a, var);
+        Neg(a)    : {
+            tPair = getMonomialOrder(a, var);
+            Pair(tPair.first, simplification( Neg(tPair.second)) );
+        }
         Sum(a, b) : Pair(0, ex);
         Sub(a, b) : Pair(0, ex);
         Div(a, b) : Pair(0, ex);
@@ -294,3 +302,39 @@ ratPolynom2Expr(rat : ratPolynom) -> Expr {
 /*
 Реализуйте функцию упрощения рациональной функции по заданному набору тождеств.
 */
+
+simplificationByIdentity(polynom : Maybe<ratPolynom>, identity : Tree<Expr, Expr>) -> Maybe<ratPolynom> {
+    switch (polynom) {
+        Some(rat) : {
+            num = rat.numerator;
+            den = rat.denominator;
+            newNum = simplificationByIdentityExpr(num, identity);
+            newDen = simplificationByIdentityExpr(den, identity);
+            Some(ratPolynom(newNum, newDen));
+        }
+        None() : None();
+    } 
+}
+
+simplificationByIdentityExpr(ex : Expr, identity : Tree<Expr, Expr>) -> Expr {
+    switch (lookupTree(identity, ex)) {
+        Some(p) : p;
+        None()  :
+            switch (ex) {
+                Sum(a, b) : 
+                    Sum(simplificationByIdentityExpr(a, identity), simplificationByIdentityExpr(b, identity));
+                Mul(a, b) : 
+                    Mul(simplificationByIdentityExpr(a, identity), simplificationByIdentityExpr(b, identity));
+                Div(a, b) : 
+                    Div(simplificationByIdentityExpr(a, identity), simplificationByIdentityExpr(b, identity));
+                Sub(a, b) : 
+                    Sub(simplificationByIdentityExpr(a, identity), simplificationByIdentityExpr(b, identity));
+                Neg(a) : 
+                    Neg(simplificationByIdentityExpr(a, identity));
+                Int(a) : 
+                    Int(a);
+                Var(a) : 
+                    Var(a);
+        }
+    }
+}
