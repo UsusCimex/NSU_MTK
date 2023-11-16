@@ -2,7 +2,8 @@
 // import calcRpn;
 // import calcRat;
 // import calcDiff;
-import calcPolynomRat;
+// import calcPolynomRat;
+import simplificationIdentities;
 
 
 main() {
@@ -59,13 +60,23 @@ main() {
     // testPolynom = "((((20+y)*x) + x)/(4*x))";
     // testPolynom = "((((x*x)*2)+3)-(2*(x*x)))";
     // testPolynom = "((((5*x)*x) + ((6*(x*y)) + ((5+y)*(x * x)))) / (2*x))";
-    testPolynom = "(((x/y)+1)+((y/x)+(x/y)))";
-    exp = parse(testPolynom);
-    println("func: " + expr2s(exp));
+    // testPolynom = "(((x/y)+1)+((y/x)+(x/y)))";
+    // testPolynom = "((x*x)-(y*y))";
+    // testPolynom = "(x-y)";
+    // exp = parse(testPolynom);
+    // println("func: " + expr2s(exp));
     // params = setTreeValues(makeTree(), [Pair("y", ratNum(1, 1))]);
-    params = makeTree();
-    polynom = calculatePolynomRatArr(exp, params, [Var("x"), Var("y")], Var("x"));
-    println("polynom: " + ratPolynom2s(polynom));
+    // params = makeTree();
+    // polynom = calculatePolynomRatArr(exp, params, [Var("x"), Var("y")], Var("x"));
+    // println("polynom: " + ratPolynom2s(polynom));
 
+    //Identities polynom test
+    testPolynom = "(((x*x)*(x*x)) - ((y*y)*(y*y)))";
+    polynom = ratPolynom(parse(testPolynom), Int(1));
+    println("polynom: " + ratPolynom2s(Some(polynom)));
+    simpl = simplificationByIdentities(polynom,
+        [Pair(Sub(Mul(Var("x"), Var("x")), Mul(Var("y"), Var("y"))),
+                 Mul(Sub(Var("x"), Var("y")), Sum(Var("x"), Var("y"))))]); //x^2 - y^2 = (x-y)*(x+y)
+    println("simpl: " + ratPolynom2s(Some(simpl)));
     quit(0);
 }
