@@ -56,14 +56,15 @@ main() {
     // println("Differencial fucn3: " + expr2s(diffExp3) + "\n");
 
     //Polynom calculator test
-    // testPolynom = "((x+3)+(2*(x*x)))";
-    testPolynom = "((((5*x)*x) + ((6*x) + (x * x))) / (2*x))";
-    // testPolynom = "(((4*(x*(x*x))) + ((5*(x*x)) + (6*x))) / (2*x))";
+    // testPolynom = "((((20+y)*x) + x)/(4*x))";
+    // testPolynom = "((((x*x)*2)+3)-(2*(x*x)))";
+    // testPolynom = "((((5*x)*x) + ((6*(x*y)) + ((5+y)*(x * x)))) / (2*x))";
+    testPolynom = "(((x/y)+1)+((y/x)+(x/y)))";
     exp = parse(testPolynom);
     println("func: " + expr2s(exp));
-    // params = setTreeValues(makeTree(), [Pair("x", ratNum(1, 1))]);
+    // params = setTreeValues(makeTree(), [Pair("y", ratNum(1, 1))]);
     params = makeTree();
-    polynom = calculatePolynomRat(exp, params);
+    polynom = calculatePolynomRatArr(exp, params, [Var("x"), Var("y")], Var("x"));
     println("polynom: " + ratPolynom2s(polynom));
 
     quit(0);

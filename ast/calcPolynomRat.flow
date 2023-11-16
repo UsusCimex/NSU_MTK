@@ -14,6 +14,8 @@ export {
     ratPolynom2s(rat : Maybe<ratPolynom>)                                   -> string;
     calculatePolynomRat(v : Expr, params : Tree<string, ratNum>, var : Var) -> Maybe<ratPolynom>;
     simplificationRat(rat : Maybe<ratPolynom>, var : Var)                   -> Maybe<ratPolynom>;
+    ratPolynom2Expr(rat : ratPolynom)                                       -> Expr;
+    calculatePolynomRatArr(v : Expr, params : Tree<string, ratNum>, vars : [Var], resVar : Var) -> Maybe<ratPolynom>;
 }
 
 simplificationRat(rat : Maybe<ratPolynom>, var : Var) -> Maybe<ratPolynom> {
@@ -227,6 +229,11 @@ divRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>, var : Var) -> Maybe<
     }
 }
 
+calculatePolynomRatArr(v : Expr, params : Tree<string, ratNum>, vars : [Var], resVar : Var) -> Maybe<ratPolynom> {
+    newV = fold(vars, v, \acc, elem -> ratPolynom2Expr(either(calculatePolynomRat(acc, params, elem), ratPolynom(Int(0), Int(0)))));
+    calculatePolynomRat(newV, params, resVar);
+}
+
 calculatePolynomRat(v : Expr, params : Tree<string, ratNum>, var : Var) -> Maybe<ratPolynom> {
     switch (v) {
         Sum(a, b) : 
@@ -278,6 +285,10 @@ ratPolynom2s(rat : Maybe<ratPolynom>) -> string {
     } else {
         "Calculate error...";
     }
+}
+
+ratPolynom2Expr(rat : ratPolynom) -> Expr {
+    Div(rat.numerator, rat.denominator);
 }
 
 /*
