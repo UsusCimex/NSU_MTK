@@ -81,7 +81,7 @@ simplification(ex : Expr) -> Expr {
             }
             else if (a.structname == "Sum" && b.structname == "Sum") {
                 tSum = cast(a : Expr -> Sum);
-                tSum2 = cast(a : Expr -> Sum);
+                tSum2 = cast(b : Expr -> Sum);
                 simplification( Sum(
                     simplification( Sum(
                         simplification( Mul(tSum.lVal, tSum2.lVal) ),
@@ -90,6 +90,33 @@ simplification(ex : Expr) -> Expr {
                         simplification( Mul(tSum.rVal, tSum2.lVal) ),
                         simplification( Mul(tSum.rVal, tSum2.rVal))) )
                 ));
+            }
+            else if (a.structname == "Sub" && b.structname == "Sub") {
+                tSub = cast(a : Expr -> Sub);
+                tSub2 = cast(b : Expr -> Sub);
+                simplification( Sub(
+                    simplification( Sum(
+                        simplification( Mul(tSub.lVal, tSub2.lVal) ),
+                        simplification( Mul(tSub.rVal, tSub2.rVal))) ),
+                    simplification( Sum(
+                        simplification( Mul(tSub.lVal, tSub2.rVal) ),
+                        simplification( Mul(tSub.rVal, tSub2.lVal))) )
+                ));
+            }
+            else if (a.structname == "Sum" && b.structname == "Sub") {
+                tSum = cast(a : Expr -> Sum);
+                tSub = cast(b : Expr -> Sub);
+                simplification( Sub(
+                    simplification( Sum(
+                        simplification( Mul(tSum.lVal, tSub.lVal) ),
+                        simplification( Mul(tSum.rVal, tSub.lVal))) ),
+                    simplification( Sum(
+                        simplification( Mul(tSum.lVal, tSub.rVal) ),
+                        simplification( Mul(tSum.rVal, tSub.rVal))) )
+                ));
+            }
+            else if (a.structname == "Sub" && b.structname == "Sum") {
+                simplification( Mul(b, a) );
             }
             else if (a.structname == "Mul" && b.structname == "Mul") {
                 tMul = cast(a : Expr -> Mul);
@@ -128,6 +155,21 @@ simplification(ex : Expr) -> Expr {
                     simplification( Sum(
                         simplification( Mul(a, tSum.lVal) ),
                         simplification( Mul(a, tSum.rVal) )
+                    ));
+                }
+            }
+            else if (a.structname == "Sub" || b.structname == "Sub") {
+                if (a.structname == "Sub") {
+                    tSub = cast(a : Expr -> Sub);
+                    simplification( Sub(
+                        simplification( Mul(tSub.lVal, b) ),
+                        simplification( Mul(tSub.rVal, b) )
+                    ));
+                } else {
+                    tSub = cast(b : Expr -> Sub);
+                    simplification( Sub(
+                        simplification( Mul(a, tSub.lVal) ),
+                        simplification( Mul(a, tSub.rVal) )
                     ));
                 }
             }

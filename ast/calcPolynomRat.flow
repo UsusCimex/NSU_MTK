@@ -191,7 +191,7 @@ subRatPolynom(l : Maybe<ratPolynom>, r : Maybe<ratPolynom>, var : Var) -> Maybe<
         newL = either(l, ratPolynom(Int(0),Int(0)));
         newR = either(r, ratPolynom(Int(0),Int(0)));
 
-        if (newL.numerator == Int(0)) mulRatPolynom(Some(ratPolynom(Int(-1), Int(1))), r, var)
+        if (newL.numerator == Int(0)) mulRatPolynom(Some(ratPolynom(Neg(Int(1)), Int(1))), r, var)
         else if (newR.numerator == Int(0)) l
         else simplificationRat(Some( ratPolynom(
                         simplification( Sub(
@@ -268,7 +268,7 @@ calculatePolynomRat(v : Expr, params : Tree<string, ratNum>, var : Var) -> Maybe
             );
         Neg(a) : 
             mulRatPolynom(
-                Some(ratPolynom(Int(-1), Int(1))), 
+                Some(ratPolynom(Neg(Int(1)), Int(1))), 
                 calculatePolynomRat(a, params, var),
                 var
             );
