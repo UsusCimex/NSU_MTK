@@ -61,22 +61,40 @@ main() {
     // testPolynom = "((((x*x)*2)+3)-(2*(x*x)))";
     // testPolynom = "((((5*x)*x) + ((6*(x*y)) + ((5+y)*(x * x)))) / (2*x))";
     // testPolynom = "(((x/y)+1)+((y/x)+(x/y)))";
-    // testPolynom = "((x*x)-(y*y))";
-    // testPolynom = "(x-y)";
+    // testPolynom = "((((a + 1) / (7 * c)) * ((7 + (6 * c)) / x)) / ((3 * (a + 1)) / (x * x)))";
+    // testPolynom = "((((x - 6) / (6 * y)) / (((x * x) - (y * y)) / y)) * (((x * x) + ((2 * (x * y)) + (y * y))) / x))";
+    // testPolynom = "(((4 * (a * a)) - 9) * ((1 / ((2 * a) - 3)) - (1 / ((2 * a) + 3))))";
+    // testPolynom = "(((3 * x) / (x + 2)) + ((y * x) / (5 + x)))";
     // exp = parse(testPolynom);
     // println("func: " + expr2s(exp));
     // params = setTreeValues(makeTree(), [Pair("y", ratNum(1, 1))]);
     // params = makeTree();
-    // polynom = calculatePolynomRatArr(exp, params, [Var("x"), Var("y")], Var("x"));
+    // polynom = calculatePolynomRatArr(exp, params, [Var("a"), Var("c"), Var("x"), Var("y")], Var("x"));
     // println("polynom: " + ratPolynom2s(polynom));
 
     //Identities polynom test
-    testPolynom = "(((x*x)*(x*x)) - ((y*y)*(y*y)))";
-    polynom = ratPolynom(parse(testPolynom), Int(1));
-    println("polynom: " + ratPolynom2s(Some(polynom)));
+    testNum = "(--((x*x)*(x*x)) - ((y*y)*(y*y)))";
+    // testNum = "(((z * (x * x)) + (z * (2*(x*y)))) + (z * (y*y)))";
+    // testNum = "((z*z)-(1*1))";
+    // testDen = "(((z*z) + (2*(z*1))) + (1*1))";
+    testDen = "1";
+    polynom = ratPolynom(parse(testNum), parse(testDen));
+    println("Func: " + ratPolynom2s(Some(polynom)));
     simpl = simplificationByIdentities(polynom,
-        [Pair(Sub(Mul(Var("x"), Var("x")), Mul(Var("y"), Var("y"))),
-                 Mul(Sub(Var("x"), Var("y")), Sum(Var("x"), Var("y"))))]); //x^2 - y^2 = (x-y)*(x+y)
+        [
+         Pair("((x*x)-(y*y))", "((x-y)*(x+y))"),
+         Pair("--x","x"),
+         Pair("(((x*x)+(2*(x*y)))+(y*y))", "((x+y)*(x+y))"),
+         Pair("((x*y)+(x*z))", "(x*(y+z))"),
+
+         Pair("(x/x)", "1"),
+         Pair("((x*y)/x)", "y"),
+         Pair("((y*x)/x)", "y"),
+         Pair("((x*y)/(x*z))", "(y/z)"),
+         Pair("((x*y)/(z*x))", "(y/z)"),
+         Pair("((y*x)/(x*z))", "(y/z)"),
+         Pair("((y*x)/(z*x))", "(y/z)")
+        ]);
     println("simpl: " + ratPolynom2s(Some(simpl)));
     quit(0);
 }
