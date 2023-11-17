@@ -5,20 +5,30 @@ import calcPolynomRat;
 */
 
 export {
-    simplificationByIdentity(polynom : ratPolynom, identity : Pair<Expr, Expr>)       -> ratPolynom;
-    simplificationByIdentities(polynom : ratPolynom, identities : [Pair<Expr, Expr>]) -> ratPolynom;
+    simplificationByIdentity(polynom : ratPolynom, identity : Pair<string, string>)       -> ratPolynom;
+    simplificationByIdentities(polynom : ratPolynom, identities : [Pair<string, string>]) -> ratPolynom;
 }
 
-simplificationByIdentities(polynom : ratPolynom, identities : [Pair<Expr, Expr>]) -> ratPolynom {
-    fold(identities, polynom, \acc, elem -> simplificationByIdentity(polynom, elem));
+simplificationByIdentities(polynom : ratPolynom, identities : [Pair<string, string>]) -> ratPolynom {
+    tst = fold(identities, polynom, \acc, elem -> simplificationByIdentity(acc, elem));
+    if (tst == polynom) tst
+    else simplificationByIdentities(tst, identities);
 }
 
-simplificationByIdentity(polynom : ratPolynom, identity : Pair<Expr, Expr>) -> ratPolynom {
+simplificationByIdentity(polynom : ratPolynom, identity : Pair<string, string>) -> ratPolynom {
+    exp1 = parse(identity.first);
+    exp2 = parse(identity.second);
+    nIdentity = Pair(exp1, exp2);
     num = polynom.numerator;
     den = polynom.denominator;
-    newNum = simplificationByIdentityExpr(num, identity);
-    newDen = simplificationByIdentityExpr(den, identity);
-    ratPolynom(newNum, newDen);
+    div = Div(num, den);
+    res = simplificationByIdentityExpr(div, nIdentity);
+    if (res.structname == "Div") {
+        dv = cast(res : Expr -> Div);
+        ratPolynom(dv.lVal, dv.rVal);
+    } else {
+        ratPolynom(res, Int(1));
+    }
 }
 
 simplificationByIdentityExpr(ex : Expr, identity : Pair<Expr, Expr>) -> Expr {
@@ -52,7 +62,6 @@ comparisonOfExpr(comparable : Expr, sample : Expr, tr : Tree<Var, Expr>) -> Pair
             None() : Pair(true, setTree(tr, vr, comparable));
         }
     }
-    else if (comparable.structname == "Var" || comparable.structname == "Int") Pair(false, makeTree())
     else if (comparable.structname != sample.structname) Pair(false, makeTree())
     else {
         switch (sample) {
@@ -109,7 +118,12 @@ comparisonOfExpr(comparable : Expr, sample : Expr, tr : Tree<Var, Expr>) -> Pair
                 tNeg2 = sample;
                 comparisonOfExpr(tNeg1.val, tNeg2.val, tr);
             }
-            Int(a)    : Pair(false, makeTree());
+            Int(a)    : {
+                tInt1 = cast(comparable : Expr -> Int);
+                tInt2 = sample;
+                if (tInt1.val == tInt2.val) Pair(true, setTree(tr, Var("Integer"), Var("Integer")))
+                else Pair(false, makeTree());
+            }
             Var(a)    : Pair(false, makeTree());
         }
     }
