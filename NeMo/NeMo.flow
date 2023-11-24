@@ -1,0 +1,80 @@
+import string;
+import lingo/pegcode/driver;
+import ds/tree;
+import math/math;
+
+export {
+    NemoType ::= NemoTypeInt, NemoTypeArray;
+        NemoTypeInt   : ();
+        NemoTypeArray : (type : NemoType);
+
+    NemoExpr ::= NemoInt, NemoVar, NemoBOp, NemoPrior;
+        NemoInt : (val : int);
+        NemoVar : (val : string);
+        NemoBOp : (op : string, lExpr : NemoExpr, rExpr : NemoExpr);
+        NemoPrior : (ex : NemoExpr);
+    
+    NemoLogicExpr ::= NemoLogic, NemoNot;
+        NemoLogic : (op : string, lExpr : NemoExpr, rExpr : NemoExpr);
+        NemoNot   : (ex : NemoLogicExpr);
+
+    NemoProg : (decl : [NemoDecl], body : [NemoBody]);
+
+    NemoDecl : (var : string, type : NemoType);
+    NemoType ::= NemoIntType, NemoArrayType;
+        NemoIntType   : ();
+        NemoArrayType : (type : NemoType);
+
+    NemoBody ::= NemoAssign, NemoPrint, NemoTest, NemoLoop, NemoBlock;
+        NemoAssign : (var : NemoVar, val : NemoExpr);
+        NemoPrint  : (expr : NemoExpr);
+        NemoTest   : (logic : NemoLogicExpr);
+        NemoLoop   : (body : [NemoBody]);
+        NemoBlock  : (body : [NemoBody]);
+
+    s2nemo(str  : string)   -> NemoProg;
+    // nemo2s(prog : NemoProg) -> string;
+}
+
+s2nemo(str : string) -> NemoProg {
+    e_gr = "#include grammar.lingo";
+    parsic(
+        compilePegGrammar(e_gr),
+        str,
+        defaultPegActions
+    );
+}
+
+// nemo2s(prog : NemoProg) -> string {
+//     decl2s(prog.decl) + body2s(prog.body);
+// }
+
+// decl2s(decl : [NemoDecl]) -> string {
+//     fold(decl, "", \a,b -> a + "var " + b.var + " : " + nemoType2s(b.type) + ";\n");
+// }
+
+// nemoType2s(type : NemoType) -> string {
+//     switch(type) {
+//         NemoIntType()         : "Int";
+//         NemoArrayType(inType) : "[" + nemoType2s(inType) + "]";
+//     }
+// }
+
+// body2s(body : [NemoBody]) -> string {
+//     fold(body, "", \a,b -> a +
+//         switch(b) {
+//             NemoAssign(var, val) : "VAR " + var.val + " := " + nemoExpr2s(val) + ";\n";
+//             NemoPrint(expr)      : "print(" + nemoExpr2s(expr) + ");\n";
+//             NemoTest(boolOp, lExpr, rExpr) : "(" + nemoExpr2s(lExpr) + boolOp + nemoExpr2s(rExpr) + ")?\n";
+//             NemoLoop(body)       : "(" + body2s(body) + ")*\n";
+//         }
+//     )
+// }
+
+// nemoExpr2s(expr : NemoExpr) -> string {
+//     switch(expr) {
+//         NemoInt(val)              : i2s(val);
+//         NemoVar(val)              : val;
+//         NemoBOp(op, lExpr, rExpr) : "(" + nemoExpr2s(lExpr) + " " + op + " " + nemoExpr2s(rExpr) + ")";
+//     }
+// }

@@ -1,0 +1,10 @@
+import NeMo;
+
+main() {
+    nemoProgText = getFileContent("testCode.txt");
+	println(nemoProgText + "\n\n");
+	nemoProg = s2nemo(nemoProgText);
+	println(nemoProg);
+
+	quit(0);
+}

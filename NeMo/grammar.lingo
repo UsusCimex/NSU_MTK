@@ -1,0 +1,33 @@
+prog = ws decl*:d ws body+:b { NemoProg(:d, :b)};
+
+decl = ws "VAR " ws word$v ws ":" ws type:t ws ";" { NemoDecl($v, :t) };
+body = assign | print | test | loop | block;
+
+type = intType | arrayType;
+intType = ws "INT" { NemoTypeInt() };
+arrayType = ws "[" ws type:t ws "]" { NemoTypeArray(:t) };
+
+expr = int | var | bOp | prior;
+int = ws number:n { NemoInt(:n) };
+var = ws word$w { NemoVar($w) };
+bOp = ws expr:l ws algOp$s ws expr:r { NemoBOp($s, :l, :r) };
+prior = ws "(" ws expr:e ws ")" { NemoPrior(:e) };
+
+logicExpr = logic | not;
+logic = ws expr:l ws boolOp$s ws expr:r { NemoLogic($s, :l, :r) };
+not = ws "NOT" ws "(" ws logicExpr:e ws ")" { NemoNot(:e) };
+
+assign = ws var:v ws ":=" ws expr:e ws ";" { NemoAssign(:v, :e) };
+print = ws "print" ws "(" ws expr:e ws ")" ws ";" { NemoPrint(:e) };
+test = ws "(" ws logicExpr:le ws ")?" ws ";" { NemoTest(:le) };
+loop = ws "{" ws body+:bd ws "}*" { NemoLoop(:bd) };
+block = ws "{" ws body*:bd ws "}" { NemoBody(:bd) };
+
+number = digit+$s { s2i($s) };
+word = letter+$s { $s };
+digit = '0' - '9';
+letter = 'a' - 'z';
+ws = (' ' | '\t' | '\n' | '\r')*;
+
+boolOp = ("==" | "<=" | ">=" | "<" | ">" | "!=")$s {$s};
+algOp = ("+" | "*" | "/" | "-" | "%")$s {$s};
