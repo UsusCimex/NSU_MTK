@@ -1,0 +1,17 @@
+import VirtualMachine;
+
+main() {
+    nemoProgText = getFileContent("tests/2.txt");
+	println(nemoProgText);
+	println("\n\n");
+
+	nemoProg = s2nemo(nemoProgText);
+	println(nemoProg);
+	println("\n\n");
+	
+	vmProg = translateNemo(nemoProg);
+	
+	println(vm2s(vmProg));
+
+	quit(0);
+}

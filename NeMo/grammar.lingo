@@ -1,0 +1,46 @@
+prog = ws decl*:d ws body:b ws {BuildProg(:d, :b)};
+
+decl = ws "VAR" ws var:v ws ":" ws type:t ws ";" ws {Decl(:v, :t)};
+type = arrayType | int;
+arrayType = ws "[" ws type:t ws "]" {ArrayType(:t)};
+int = ws "INT" {IntType()};
+
+body = assignment | test | loop | choice | seq;
+assignment = ws var:v ws ":=" ws expression:e {Assignment(:v, :e)};
+test = ws "(" ws logicF:f ws ")" ws "?" {Test(:f)};
+loop = ws "{" ws seqBody*:bs ws "}" ws "*" {Loop(:bs)};
+choice = ws "{" ws body+:b ws choiceBody*:bs ws "}" {BuildChoice(:b, :bs)};
+choiceBody = ws "U" ws body:b ws {:b}; 
+seq = ws "{" ws seqBody*:bs ws "}" {Sequence(:bs)};
+seqBody = ws body:b ws ";" ws {:b};
+
+logicF = logicOp | lAtom | lneg;
+logicOp = fls | tr | eq | neq | le | l | ge | g;
+lneg = ws "NOT" ws logicF:f {LNeg(:f)};
+lAtom = ws "(" ws logicF:f ws ")" {:f};
+fls = ws "FALSE" {False()};
+tr  = ws "TRUE" {True()};
+eq  = ws arithExpr:e1 ws "==" ws arithExpr:e2 {Eq(:e1, :e2)};
+neq = ws arithExpr:e1 ws "!=" ws arithExpr:e2 {Neq(:e1, :e2)};
+le  = ws arithExpr:e1 ws "<=" ws arithExpr:e2 {Le(:e1, :e2)};
+l   = ws arithExpr:e1 ws "<" ws arithExpr:e2  {L(:e1, :e2) };
+ge  = ws arithExpr:e1 ws ">=" ws arithExpr:e2 {Ge(:e1, :e2)};
+g   = ws arithExpr:e1 ws ">" ws arithExpr:e2  {G(:e1, :e2)};
+
+expression = arithExpr | arrayExpr;
+arithExpr = number | var | neg | apply | sum | mul | div | sub;
+sum = ws "(" ws arithExpr:e1 ws "+" ws arithExpr:e2 ws ")" {Add(:e1, :e2)};
+mul = ws "(" ws arithExpr:e1 ws "*" ws arithExpr:e2 ws ")" {Mul(:e1, :e2)};
+div = ws "(" ws arithExpr:e1 ws "/" ws arithExpr:e2 ws ")" {Div(:e1, :e2)};
+sub = ws "(" ws arithExpr:e1 ws "-" ws arithExpr:e2 ws ")" {Sub(:e1, :e2)};
+neg = ws "-" ws arithExpr:e {Neg(:e)};
+apply = ws "APP" ws "(" ws arrayExpr:v ws "," ws expression:at ws ")" {Apply(:v, :at)};
+
+arrayExpr = upd | var | array;
+upd = ws "UPD" ws "(" ws arrayExpr:v ws "," ws expression:at ws "," ws expression:to ws ")" {Upd(:v, :at, :to )};
+array = ws "[" ws arithExpr+:el ws elemOfArray*:el2 ws "]" {BuildArray(:el, :el2)};
+elemOfArray = ws "," ws arithExpr:el ws {:el};
+
+number = ('0' - '9')+ $d {Int(s2i($d))};
+var = ('a' - 'z')+ $v {Var($v)};
+ws = (" " | "\t" | "\n" | "\r")*;

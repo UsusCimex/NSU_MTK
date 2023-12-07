@@ -1,0 +1,19 @@
+VAR n: INT; 
+VAR x: INT; 
+VAR y: INT; 
+VAR tmp : INT; 
+VAR array : [INT];
+{
+    n := 12; x := 0; y := 0;
+    {
+        {
+            (y <= n)?;
+            y := (y + (x + (x + 1)));
+            x := (x + 1);
+        }*;
+        (NOT (y <= n))?;
+    };
+    x := (x - 1);
+    tmp := APP([1, 2, 3, 4, 5], 0);
+    array := UPD([1, 2, 3], 0, tmp);
+}

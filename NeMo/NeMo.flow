@@ -1,0 +1,77 @@
+import lingo/pegcode/driver;
+import sys/system;
+import ds/tree;
+import ds/tuples;
+import math/math;
+import string;
+
+export {
+    NemoAst : (decls : [Decl], prog : Body);
+    Decl 	: (var : Var, type : Type);
+
+    Type ::= IntType, ArrayType, UnknownType;
+    IntType();
+    ArrayType : (type : Type);
+    UnknownType();
+
+    Body ::= Assignment, Sequence, Test, Choice, Loop;
+    Assignment : (var : Var, expr : nemoTerm);
+    Sequence   : (bodies : [Body]);
+    Test	   : (form : Formula);
+    Choice	   : (bodies : [Body]);
+    Loop	   : (bodies : [Body]);
+
+    nemoTerm  ::= ArrayExpr, ArithExpr;
+    ArithExpr ::= Add, Mul, Sub, Div, Var, Int, Neg, Apply;
+    Sub : (e1 : ArithExpr, e2 : ArithExpr);
+    Div : (e1 : ArithExpr, e2 : ArithExpr);
+    Add : (e1 : ArithExpr, e2 : ArithExpr);
+    Mul : (e1 : ArithExpr, e2 : ArithExpr);
+    Neg : (e1 : ArithExpr);
+    Int : (e1 : int);
+    Var : (e1 : string);
+    Apply : (name : ArrayExpr, at : nemoTerm);
+
+    ArrayExpr ::= Array, Upd, Var;
+    Array : (elems : [ArithExpr]);
+    Upd   : (name : ArrayExpr, at : nemoTerm, to : nemoTerm);
+
+    Formula ::= LNeg, Predicate;
+    LNeg : (formula : Formula);
+    Predicate ::= False, True, Eq, Neq, Ge, G, Le, L;
+    False();
+    True();
+    Eq  : (e1 : ArithExpr, e2 : ArithExpr); 
+    Neq : (e1 : ArithExpr, e2 : ArithExpr);
+    Ge  : (e1 : ArithExpr, e2 : ArithExpr); 
+    G   : (e1 : ArithExpr, e2 : ArithExpr);  
+    Le  : (e1 : ArithExpr, e2 : ArithExpr); 
+    L   : (e1 : ArithExpr, e2 : ArithExpr); 
+
+	s2nemo : (str : string) -> NemoAst;
+}
+
+BuildProg(declAndProg: [flow]) {
+	decl = elementAt(declAndProg, 0, []);
+	prog = elementAt(declAndProg, 1, Sequence([]));
+	NemoAst(decl, prog);
+}
+
+BuildChoice(bs : [flow]) {Choice(concatA(bs))}
+BuildArray(bs : [flow]) {Array(concatA(bs))}
+
+specialPegActions = {
+	t = setTreeValues(defaultPegActions.t, [
+		Pair("BuildProg", BuildProg),
+		Pair("BuildChoice", BuildChoice),
+		Pair("BuildArray", BuildArray)]);
+	SemanticActions(t) 
+}
+
+s2nemo(source : string) {
+	parsic(
+		compilePegGrammar("#include grammar.lingo"), 
+		source, 
+		specialPegActions
+	)
+}
