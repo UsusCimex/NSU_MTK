@@ -1,0 +1,170 @@
+import NeMo;
+
+export {
+    translateNemo : (NemoAst) -> Pair<Configuration, Tree<int, [Operator]>>;
+	vm2s(vm : Pair<Configuration, Tree<int, [Operator]>>) -> string;
+}
+
+getStringVObj : (VObj) -> string;
+getStringConfig : (Configuration) -> [string];
+Operator ::= Assign, GoTo;
+Assign(as : Assignment, to : Set<int>);
+GoTo(cond : Formula, ifTrue : Set<int>, ifFalse : Set<int>);
+VObj ::= VArray, VInt;
+VArray(elements : Tree<VObj, VObj>);
+VInt(i : int);
+Configuration(state : Tree<Var, VObj>, label : int);
+
+getStringConfig(config : Configuration) -> [string] {
+	map(tree2pairs(config.state), \pair-> concatStrings([pair.first.e1, " : ", getStringVObj(pair.second)]));
+}
+
+getStringVObj(obj: VObj) -> string {
+    switch(obj) {
+		VArray(elements) : foldTree(elements, "\n", 
+			\key, value, res -> concatStrings(["(", getStringVObj(key), ": ", getStringVObj(value), ") \n"]));
+		VInt(i) : i2s(i);
+	}
+}
+
+maxLabel(ops : Tree<int, [Operator]>) -> int { 
+	maxLabelOperators = \opsArray -> fold(opsArray, 0, \maxR, op -> {
+		maxSet = \s -> foldSet(s, maxR, max);
+		switch(op) {
+			Assign(_, to) : maxSet(to);
+			GoTo(_, ifTrue, ifFalse) : max(maxSet(ifTrue), maxSet(ifFalse));
+	}});
+	foldTree(ops, 0, \key, value, maxR -> max3(maxR, key, maxLabelOperators(value)));
+}
+
+incrementLabels(ops : Tree<int, [Operator]>, inc : int) -> Tree<int, [Operator]> {
+	incSet = \labels -> mapSet(labels, \x -> x + inc);
+	incLabelsOperators = \opsArray -> map(opsArray, \op -> switch (op) {
+			Assign(as, to) : Assign(as, incSet(to)); 
+			GoTo(cond, ifTrue, ifFalse) : GoTo(cond, incSet(ifTrue), incSet(ifFalse));
+		});
+	foldTree(ops, makeTree(), \key, values, newTree -> setTree(newTree, key+inc, incLabelsOperators(values)));
+}
+
+replaceLabels(ops : Tree<int, [Operator]>, what : int, to : int) -> Tree<int, [Operator]> {
+	replace = \x -> 
+		if (x == what) {
+			to;
+		} else {
+			x;
+		}
+
+	replaceLabelsOperators = \opsArray -> map(opsArray, \op -> switch (op) {
+		Assign(as, set) : Assign(as, mapSet(set, replace)); 
+		GoTo(cond, ifTrue, ifFalse) : GoTo(cond, mapSet(ifTrue, replace), mapSet(ifFalse, replace));
+	});
+	foldTree(ops, makeTree(), \key, value, newTree-> 
+		setTree(newTree, if (key == what) to else key, replaceLabelsOperators(value))) 
+}
+
+assign(as : Assignment) -> Tree<int, [Operator]> {
+	treePushToArrayValue(makeTree(), 0, Assign(as, makeSet1(1)));
+}
+
+test(f : Formula) -> Tree<int, [Operator]> {
+	treePushToArrayValue(makeTree(), 0, GoTo(f, makeSet1(1), makeSet()));
+}
+
+seq(ops : [Body]) -> Tree<int, [Operator]> {
+	fold(ops, makeTree(), \prevSemantics, op -> {
+		prevMax = maxLabel(prevSemantics);
+		opOps = incrementLabels(buildOps(op), prevMax);
+		mergeTree(prevSemantics, opOps);
+	});
+}
+
+choice(ops : [Body]) -> Tree<int, [Operator]> {
+	fold(ops, makeTree(), \prevSemantics, op-> {
+		prevOps = incrementLabels(prevSemantics, 1);
+		prevMax = maxLabel(prevOps);
+		opOps = incrementLabels(buildOps(op), prevMax);
+		opMax = maxLabel(opOps);
+		
+		treePushToArrayValue(mergeTree(opOps, replaceLabels(prevOps, prevMax, opMax)),
+							0, GoTo(True(), buildSet([1, prevMax]), makeSet()));
+	});
+}
+
+iteration(ops: [Body]) -> Tree<int, [Operator]> {
+	sem = incrementLabels(buildOps(Sequence(ops)), 1);
+	maxLab = maxLabel(sem);
+	treePushToArrayValue( replaceLabels(sem, maxLab, 0),
+		0, GoTo(True(), buildSet([1, maxLab]), makeSet()));
+}
+
+buildOps(b : Body) -> Tree<int, [Operator]> {
+	switch (b) {
+		Assignment(v, e) : assign(Assignment(v, e));
+		Test(cond) : test(cond); 
+		Sequence(ops) :  seq(ops);
+		Choice(ops) : choice(ops);
+		Loop(ops) : iteration(ops);
+	}
+}
+
+initObj(type : Type) -> VObj {
+	switch(type) {
+		IntType() : VInt(0);
+		ArrayType(_) : VArray(makeTree());
+		default: VInt(0); 
+	}
+}
+
+translateNemo(ast: NemoAst) -> Pair<Configuration, Tree<int, [Operator]>> {
+	initialState = fold(ast.decls, makeTree(), \state, decl -> setTree(state, decl.var, initObj(decl.type)));
+	config = Configuration(initialState, 0);
+	Pair(config, buildOps(ast.prog));
+}
+
+vm2s(vm : Pair<Configuration, Tree<int, [Operator]>>) -> string {
+	dec = foldTree(vm.first.state, "", \key, val, acc -> acc + "VAR " + key.e1 + ": " + val.structname + "; ") + "\n";
+	
+	bops = mapTree2(vm.second, \key, val -> firstElement(val, GoTo(True(), makeSet1(key + 1), makeSet())));
+	foldTree(bops, dec, \key, val, acc -> acc + i2s(key) + ": " + 
+		switch(val) {
+			Assign(as, to) : assignment2s(as) + " goto {" + set2string(to) + "}";
+			GoTo(cond, ifTrue, ifFalse) : "if(" + formula2s(cond) + ") then {" + set2string(ifTrue) + "} else {" + set2string(ifFalse) + "}";
+		} + "\n");
+}
+
+assignment2s(as : Assignment) -> string {
+	as.var.e1 + ":=" + nemoTerm2s(as.expr);		
+}
+formula2s(formula : Formula) -> string {
+	switch(formula) {
+		LNeg(form) : "NOT(" + formula2s(form) + ")";
+		False() : "FALSE";
+		True() : "TRUE";
+		Eq (e1, e2) : nemoTerm2s(e1) + "==" + nemoTerm2s(e2); 
+		Neq(e1, e2) : nemoTerm2s(e1) + "!=" + nemoTerm2s(e2);
+		Ge (e1, e2) : nemoTerm2s(e1) + ">=" + nemoTerm2s(e2);
+		G  (e1, e2) : nemoTerm2s(e1) + ">" + nemoTerm2s(e2);
+		Le (e1, e2) : nemoTerm2s(e1) + "<=" + nemoTerm2s(e2);
+		L  (e1, e2) : nemoTerm2s(e1) + "<" + nemoTerm2s(e2);
+	}
+}
+
+nemoTerm2s(expr : nemoTerm) -> string {
+	switch(expr) {
+		Sub(e1, e2) : nemoTerm2s(e1) + "-" + nemoTerm2s(e2);
+		Div(e1, e2) : nemoTerm2s(e1) + "/" + nemoTerm2s(e2);
+		Add(e1, e2) : nemoTerm2s(e1) + "+" + nemoTerm2s(e2);
+		Mul(e1, e2) : nemoTerm2s(e1) + "*" + nemoTerm2s(e2);
+		Neg(e1) : "-" + nemoTerm2s(e1);
+		Int(e1) : i2s(e1);
+		Var(e1) : e1;
+		Apply(name, at) : "APP(" + nemoTerm2s(name) + ", " + nemoTerm2s(at) + ")";
+		Array(elems) : "[" + arr2s(elems) + "]";
+		Upd(name, at, to) : "UPD(" + nemoTerm2s(name) + ", " + nemoTerm2s(at) + ", " + nemoTerm2s(to) + ")";
+	};
+}
+
+arr2s(arr : [nemoTerm]) -> string 
+{
+	strGlue(map(arr, nemoTerm2s), ", ");
+}

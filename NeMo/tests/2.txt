@@ -1,0 +1,12 @@
+VAR n : INT;
+VAR x : INT;
+VAR y : INT;
+{
+	x := 22; 
+	y := 15;
+	{
+		{ { (x > y) ? ; x := (x - y); } U
+		{ (x < y) ? ; y := (y - x); } };
+	}*;
+	(x == y) ?;
+}

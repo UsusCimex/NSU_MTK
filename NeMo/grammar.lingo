@@ -1,33 +1,46 @@
-prog = ws decl*:d ws body+:b { NemoProg(:d, :b)};
+prog = ws decl*:d ws body:b ws {BuildProg(:d, :b)};
 
-decl = ws "VAR " ws word$v ws ":" ws type:t ws ";" { NemoDecl($v, :t) };
-body = assign | print | test | loop | block;
+decl = ws "VAR" ws var:v ws ":" ws type:t ws ";" ws {Decl(:v, :t)};
+type = arrayType | int;
+arrayType = ws "[" ws type:t ws "]" {ArrayType(:t)};
+int = ws "INT" {IntType()};
 
-type = intType | arrayType;
-intType = ws "INT" { NemoTypeInt() };
-arrayType = ws "[" ws type:t ws "]" { NemoTypeArray(:t) };
+body = assignment | test | loop | choice | seq;
+assignment = ws var:v ws ":=" ws expression:e {Assignment(:v, :e)};
+test = ws "(" ws logicF:f ws ")" ws "?" {Test(:f)};
+loop = ws "{" ws seqBody*:bs ws "}" ws "*" {Loop(:bs)};
+choice = ws "{" ws body+:b ws choiceBody*:bs ws "}" {BuildChoice(:b, :bs)};
+choiceBody = ws "U" ws body:b ws {:b}; 
+seq = ws "{" ws seqBody*:bs ws "}" {Sequence(:bs)};
+seqBody = ws body:b ws ";" ws {:b};
 
-expr = int | var | bOp | prior;
-int = ws number:n { NemoInt(:n) };
-var = ws word$w { NemoVar($w) };
-bOp = ws expr:l ws algOp$s ws expr:r { NemoBOp($s, :l, :r) };
-prior = ws "(" ws expr:e ws ")" { NemoPrior(:e) };
+logicF = logicOp | lAtom | lneg;
+logicOp = fls | tr | eq | neq | le | l | ge | g;
+lneg = ws "NOT" ws logicF:f {LNeg(:f)};
+lAtom = ws "(" ws logicF:f ws ")" {:f};
+fls = ws "FALSE" {False()};
+tr  = ws "TRUE" {True()};
+eq  = ws arithExpr:e1 ws "==" ws arithExpr:e2 {Eq(:e1, :e2)};
+neq = ws arithExpr:e1 ws "!=" ws arithExpr:e2 {Neq(:e1, :e2)};
+le  = ws arithExpr:e1 ws "<=" ws arithExpr:e2 {Le(:e1, :e2)};
+l   = ws arithExpr:e1 ws "<" ws arithExpr:e2  {L(:e1, :e2) };
+ge  = ws arithExpr:e1 ws ">=" ws arithExpr:e2 {Ge(:e1, :e2)};
+g   = ws arithExpr:e1 ws ">" ws arithExpr:e2  {G(:e1, :e2)};
 
-logicExpr = logic | not;
-logic = ws expr:l ws boolOp$s ws expr:r { NemoLogic($s, :l, :r) };
-not = ws "NOT" ws "(" ws logicExpr:e ws ")" { NemoNot(:e) };
+expression = arithExpr | arrayExpr;
+arithExpr = number | var | neg | apply | sum | mul | div | sub;
+sum = ws "(" ws arithExpr:e1 ws "+" ws arithExpr:e2 ws ")" {Add(:e1, :e2)};
+mul = ws "(" ws arithExpr:e1 ws "*" ws arithExpr:e2 ws ")" {Mul(:e1, :e2)};
+div = ws "(" ws arithExpr:e1 ws "/" ws arithExpr:e2 ws ")" {Div(:e1, :e2)};
+sub = ws "(" ws arithExpr:e1 ws "-" ws arithExpr:e2 ws ")" {Sub(:e1, :e2)};
+neg = ws "-" ws arithExpr:e {Neg(:e)};
+apply = ws "APP" ws "(" ws arrayExpr:v ws "," ws expression:at ws ")" {Apply(:v, :at)};
 
-assign = ws var:v ws ":=" ws expr:e ws ";" { NemoAssign(:v, :e) };
-print = ws "print" ws "(" ws expr:e ws ")" ws ";" { NemoPrint(:e) };
-test = ws "(" ws logicExpr:le ws ")?" ws ";" { NemoTest(:le) };
-loop = ws "{" ws body+:bd ws "}*" { NemoLoop(:bd) };
-block = ws "{" ws body*:bd ws "}" { NemoBody(:bd) };
+arrayExpr = upd | var | array;
+upd = ws "UPD" ws "(" ws arrayExpr:v ws "," ws expression:at ws "," ws expression:to ws ")" {Upd(:v, :at, :to )};
+array = ws "[" ws arithExpr+:el ws elemOfArray*:el2 ws "]" {BuildArray(:el, :el2)};
+elemOfArray = ws "," ws arithExpr:el ws {:el};
 
-number = digit+$s { s2i($s) };
-word = letter+$s { $s };
-digit = '0' - '9';
-letter = 'a' - 'z';
-ws = (' ' | '\t' | '\n' | '\r')*;
-
-boolOp = ("==" | "<=" | ">=" | "<" | ">" | "!=")$s {$s};
-algOp = ("+" | "*" | "/" | "-" | "%")$s {$s};
+number = ('0' - '9')+ $d {Int(s2i($d))};
+var = ('a' - 'z')+ $v {Var($v)};
+ws = (" " | "\t" | "\n" | "\r")*;
