@@ -1,7 +1,8 @@
 import VirtualMachine;
+import Validate;
 
 main() {
-    nemoProgText = getFileContent("tests/2.txt");
+    nemoProgText = getFileContent("tests/1.txt");
 	println(nemoProgText);
 	println("\n\n");
 
@@ -9,9 +10,12 @@ main() {
 	println(nemoProg);
 	println("\n\n");
 	
-	vmProg = translateNemo(nemoProg);
-	
-	println(vm2s(vmProg));
-
+	switch(CheckProg(nemoProg)) {
+		Error(info) : println("ERROR: " + info);
+		Success(info) : {
+			vmProg = translateNemo(nemoProg);
+			println(vm2s(vmProg));
+		}
+	}
 	quit(0);
 }

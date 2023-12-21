@@ -111,7 +111,7 @@ initObj(type : Type) -> VObj {
 	switch(type) {
 		IntType() : VInt(0);
 		ArrayType(_) : VArray(makeTree());
-		default: VInt(0); 
+		default : VInt(0);
 	}
 }
 

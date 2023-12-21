@@ -1,0 +1,182 @@
+import NeMo;
+
+export {
+    CheckProg(nemoProg: NemoAst) -> CheckRes;
+}
+
+getTermType(typeMap : Tree<string, Type>, term : nemoTerm) -> Type {
+	binaryOperationType = \e1, e2 -> {
+		e1Type = getTermType(typeMap, e1);
+		e2Type = getTermType(typeMap, e2);
+		if (e1Type == e2Type) {
+			e1Type;
+		} else {
+			UnknownType();
+		}
+	};
+
+	getArrayType = \arr -> switch (arr) {
+		Apply(ar, a) : switch (getTermType(typeMap, ar)) {
+			ArrayType(c) : c;
+			default : UnknownType();
+		};
+		Upd(ar, a, t) : getTermType(typeMap, ar);
+		Var(e1) : either(lookupTree(typeMap, e1), UnknownType());
+        Array(c) : fold(c, IntType(), \acc, v -> switch(acc) {
+			IntType() : switch(v) {
+				Int(s) : IntType();
+				default : UnknownType();
+			}
+			default : UnknownType();
+		});
+        default : UnknownType();
+	};
+
+	switch (term) {
+		Sub(e1, e2) : binaryOperationType(e1, e2);
+		Div(e1, e2) : binaryOperationType(e1, e2);
+		Add(e1, e2) : binaryOperationType(e1, e2);
+		Mul(e1, e2) : binaryOperationType(e1, e2);
+		Neg(e1) : getTermType(typeMap, e1);
+		Int(e1) : IntType();
+		Var(e1) : either(lookupTree(typeMap, e1), UnknownType());
+		Apply(ar, at) : getArrayType(ar);
+		Upd(ar, at, to) : switch(getArrayType(ar)) {
+			IntType() : ArrayType(IntType());
+			default : UnknownType();
+		}
+        Array(c) : switch(getArrayType(Array(c))) {
+			IntType() : ArrayType(IntType());
+			default : UnknownType();
+		}
+	}
+}
+ 
+getAssignments(body : Body) {
+	switch (body) {
+		Assignment(v, t) : [Assignment(v, t)]; 
+		Sequence(bs) : fold(bs, [], \assignments, b-> concat(assignments, getAssignments(b)));
+		Test(cond) : [];
+		Choice(bs) : fold(bs, [], \assignments, b -> concat(assignments, getAssignments(b)));
+		Loop(b) : getAssignments(Sequence(b));
+	}
+}
+
+isContains2Decl(vars : [Decl]) {
+	fold(vars, false, \res, v -> res || (countA(vars, \elem -> elem.var == v.var)) != 1);
+}
+
+isFormIncorrect(typeMap : Tree<string, Type>, form : Formula) {
+	switch (form) {
+		LNeg(f) : isFormIncorrect(typeMap, f);
+		Eq(e1, e2) : getTermType(typeMap, e1) != getTermType(typeMap, e2); 
+		Neq(e1, e2) : getTermType(typeMap, e1) != getTermType(typeMap, e2);
+		Ge(e1, e2) : getTermType(typeMap, e1) != getTermType(typeMap, e2); 
+		G(e1, e2) : getTermType(typeMap, e1) != getTermType(typeMap, e2);  
+		Le(e1, e2) : getTermType(typeMap, e1) != getTermType(typeMap, e2); 
+		L(e1, e2) : getTermType(typeMap, e1) != getTermType(typeMap, e2); 
+		True() : false;
+		False() : false;
+	}
+}
+
+isTypesIncorrect(typeMap : Tree<string, Type>, body : Body) -> bool {
+	switch (body) {
+		Assignment(v, t) : false; 
+		Sequence(bs) : fold(bs, false, \res, b -> res || isTypesIncorrect(typeMap, b));
+		Test(cond) : isFormIncorrect(typeMap, cond);
+		Choice(bs) : fold(bs, false, \res, b -> res || isTypesIncorrect(typeMap, b));
+		Loop(b) : isTypesIncorrect(typeMap, Sequence(b));
+	}
+}
+
+incorrectAssignmentsTypes(typeMap:Tree<string, Type>, body: Body) -> bool {
+	fold(getAssignments(body), false, \res, as -> {
+		// println("test!!!!");
+		// println(res);
+		// println(as);
+		// println(lookupTreeDef(typeMap, as.var.e1, UnknownType()));
+		// println(getTermType(typeMap, as.expr));
+		// println("END test!!!!");
+		res || (lookupTreeDef(typeMap, as.var.e1, UnknownType()) != getTermType(typeMap, as.expr))
+	});
+}
+
+getTypeMap(vars : [Decl])-> Tree<string, Type> {
+	pairs2tree(map(vars, \vd -> Pair(vd.var.e1, vd.type)))
+}
+
+checkArgType(typeMap : Tree<string, Type>, term : nemoTerm) -> bool {
+	getArrayType = \arr -> switch (arr) {
+		Apply(ar, a) : switch (getTermType(typeMap, ar)) {
+			ArrayType(c) : c;
+			default : UnknownType();
+		};
+		Upd(ar, a, t) : getTermType(typeMap, ar);
+		Var(e1) : either(lookupTree(typeMap, e1), UnknownType());
+        Array(c) : fold(c, IntType(), \acc, v -> switch(acc) {
+			IntType() : switch(v) {
+				Int(s) : IntType();
+				default : UnknownType();
+			}
+			default : UnknownType();
+		});
+        default : UnknownType();
+	};
+
+	switch (term) {
+		Apply(ar, at) : {
+			switch(getTermType(typeMap, at)) {
+				IntType() : false;
+				default : true;
+			} || switch(getTermType(typeMap, ar)) {
+				ArrayType(v) : false;
+				default : true;
+			}
+		}
+		Upd(ar, at, to) : switch(getTermType(typeMap, at)) {
+				IntType() : false;
+				default : true;
+			} || switch(getTermType(typeMap, ar)) {
+				ArrayType(v) : false;
+				default : true;
+			} || switch(getTermType(typeMap, to)) {
+				IntType() : false;
+				default : true;
+			};
+		default : false;
+	}
+}
+
+incorrectArgumentTypes(typeMap:Tree<string, Type>, body: Body) -> bool {
+	fold(getAssignments(body), false, \res, as -> {
+		// println("test!!!!");
+		// println(res);
+		// println(as);
+		// println(checkArgType(typeMap, as.expr));
+		// println("END test!!!!");
+		res || checkArgType(typeMap, as.expr)
+	});
+}
+
+CheckRes ::= Error, Success;
+Error   : (info : string);
+Success : (info : string);
+
+CheckProg(nemoProg: NemoAst) -> CheckRes {
+	vars = nemoProg.decls;
+	prog = nemoProg.prog;
+	typeMap = getTypeMap(vars);
+
+	if (isContains2Decl(vars)) {
+		Error("Declaration error");
+	} else if (isTypesIncorrect(typeMap, prog)) {
+		Error("Types in function mismatch");
+	} else if (incorrectAssignmentsTypes(typeMap, prog)) {
+		Error("Types in assignment mismatch");
+	} else if (incorrectArgumentTypes(typeMap, prog)) {
+		Error("Types in function argument mismatch");
+	} else {
+		Success("Currectly!");
+	}
+}
