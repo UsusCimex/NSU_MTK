@@ -122,14 +122,21 @@ translateNemo(ast: NemoAst) -> Pair<Configuration, Tree<int, [Operator]>> {
 }
 
 vm2s(vm : Pair<Configuration, Tree<int, [Operator]>>) -> string {
-	dec = foldTree(vm.first.state, "", \key, val, acc -> acc + "VAR " + key.e1 + ": " + val.structname + "; ") + "\n";
+	dec = foldTree(vm.first.state, "", \key, val, acc -> acc + "VAR " + key.e1 + ": " + switch(val) {
+		VInt(v): "INT";
+		VArray(t): "[INT]";
+	} + "; ") + "\n";
 	
 	bops = mapTree2(vm.second, \key, val -> firstElement(val, GoTo(True(), makeSet1(key + 1), makeSet())));
-	foldTree(bops, dec, \key, val, acc -> acc + i2s(key) + ": " + 
+	bres = foldTree(bops, dec, \key, val, acc -> acc + i2s(key) + ": " + 
 		switch(val) {
 			Assign(as, to) : assignment2s(as) + " goto {" + set2string(to) + "}";
 			GoTo(cond, ifTrue, ifFalse) : "if(" + formula2s(cond) + ") then {" + set2string(ifTrue) + "} else {" + set2string(ifFalse) + "}";
 		} + "\n");
+	bres + switch(popmax(bops)) {
+		PopResult(k, v, rest) : i2s(k+1) + ":";
+		EmptyPopResult() : "";
+	};
 }
 
 assignment2s(as : Assignment) -> string {

@@ -1,5 +1,5 @@
-VAR a: INT;
-VAR b: [INT];
+VAR x: INT;
+VAR v: INT;
 {
 	x := (x + 1);
 	v := 1;

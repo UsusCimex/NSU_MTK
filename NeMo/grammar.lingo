@@ -23,7 +23,7 @@ tr  = ws "TRUE" {True()};
 eq  = ws arithExpr:e1 ws "==" ws arithExpr:e2 {Eq(:e1, :e2)};
 neq = ws arithExpr:e1 ws "!=" ws arithExpr:e2 {Neq(:e1, :e2)};
 le  = ws arithExpr:e1 ws "<=" ws arithExpr:e2 {Le(:e1, :e2)};
-l   = ws arithExpr:e1 ws "<" ws arithExpr:e2  {L(:e1, :e2) };
+l   = ws arithExpr:e1 ws "<" ws arithExpr:e2  {L(:e1, :e2)};
 ge  = ws arithExpr:e1 ws ">=" ws arithExpr:e2 {Ge(:e1, :e2)};
 g   = ws arithExpr:e1 ws ">" ws arithExpr:e2  {G(:e1, :e2)};
 

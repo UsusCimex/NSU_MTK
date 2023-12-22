@@ -2,7 +2,7 @@ import VirtualMachine;
 import Validate;
 
 main() {
-    nemoProgText = getFileContent("tests/1.txt");
+    nemoProgText = getFileContent("tests/3.txt");
 	println(nemoProgText);
 	println("\n\n");
 

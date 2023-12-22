@@ -82,7 +82,10 @@ isFormIncorrect(typeMap : Tree<string, Type>, form : Formula) {
 
 isTypesIncorrect(typeMap : Tree<string, Type>, body : Body) -> bool {
 	switch (body) {
-		Assignment(v, t) : false; 
+		Assignment(v, t) : switch(lookupTree(typeMap, v.e1)) {
+				Some(val) : false;
+				None() : true;
+			}; 
 		Sequence(bs) : fold(bs, false, \res, b -> res || isTypesIncorrect(typeMap, b));
 		Test(cond) : isFormIncorrect(typeMap, cond);
 		Choice(bs) : fold(bs, false, \res, b -> res || isTypesIncorrect(typeMap, b));
@@ -169,13 +172,11 @@ CheckProg(nemoProg: NemoAst) -> CheckRes {
 	typeMap = getTypeMap(vars);
 
 	if (isContains2Decl(vars)) {
-		Error("Declaration error");
+		Error("Double declaration error");
 	} else if (isTypesIncorrect(typeMap, prog)) {
-		Error("Types in function mismatch");
+		Error("Types mismatch or var wasn't declared");
 	} else if (incorrectAssignmentsTypes(typeMap, prog)) {
 		Error("Types in assignment mismatch");
-	} else if (incorrectArgumentTypes(typeMap, prog)) {
-		Error("Types in function argument mismatch");
 	} else {
 		Success("Currectly!");
 	}
